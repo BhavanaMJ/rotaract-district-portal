@@ -1,0 +1,179 @@
+"use client";
+
+import React, { useEffect } from "react";
+import { useStore } from "@/store/useStore";
+import { useShallow } from "zustand/react/shallow";
+import { X, Calendar, MapPin, Users, Clock, ShieldCheck, Heart, CircleDollarSign } from "lucide-react";
+import GlassPanel from "./GlassPanel";
+
+export default function ProjectDetailModal() {
+  const { selectedProjectId, setSelectedProjectId, projects } = useStore(useShallow((state) => ({
+    selectedProjectId: state.selectedProjectId,
+    setSelectedProjectId: state.setSelectedProjectId,
+    projects: state.projects,
+  })));
+
+  const project = projects.find((p) => p.id === selectedProjectId);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedProjectId(null);
+      }
+    };
+    if (selectedProjectId) {
+      window.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden"; // Disable scroll when modal is active
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [selectedProjectId, setSelectedProjectId]);
+
+  if (!project) return null;
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-navy-deep/85 backdrop-blur-md transition-opacity duration-300"
+        onClick={() => setSelectedProjectId(null)}
+      />
+
+      {/* Modal Content */}
+      <GlassPanel
+        className="relative w-full max-w-4xl max-h-[85vh] overflow-y-auto z-10 p-0 border border-electric-blue/25 shadow-2xl flex flex-col"
+        glowColor="cyan"
+      >
+        {/* Close Button */}
+        <button
+          onClick={() => setSelectedProjectId(null)}
+          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-navy-dark/80 hover:bg-navy-light border border-slate-700/60 text-slate-300 hover:text-white transition-all focus:outline-none"
+          aria-label="Close modal"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* Banner/Image */}
+        <div className="relative w-full h-64 md:h-80 bg-navy-medium flex-shrink-0">
+          <img
+            src={project.coverImage}
+            alt={project.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-dark via-navy-dark/40 to-transparent" />
+          
+          <div className="absolute bottom-6 left-6 right-6 md:bottom-8 md:left-8 md:right-8">
+            <span className="px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-electric-blue/15 border border-electric-blue/40 text-electric-blue backdrop-blur-md">
+              {project.avenueOfService}
+            </span>
+            <h2 className="font-headline font-bold text-2xl md:text-3xl lg:text-4xl text-white mt-4 leading-tight">
+              {project.title}
+            </h2>
+            <p className="text-sm font-metadata text-ocean-glow font-bold mt-2">
+              Organized by {project.clubName}
+            </p>
+          </div>
+        </div>
+
+        {/* Modal Body */}
+        <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Main Storytelling Column */}
+          <div className="md:col-span-2 flex flex-col gap-6">
+            <div>
+              <h3 className="font-headline text-lg font-bold text-white mb-3 border-b border-slate-800/40 pb-2">
+                Project Overview
+              </h3>
+              <p className="text-slate-300 font-body text-base leading-relaxed whitespace-pre-line">
+                {project.description}
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-headline text-lg font-bold text-white mb-3 border-b border-slate-800/40 pb-2">
+                District Impact Assessment
+              </h3>
+              <p className="text-slate-400 font-body text-sm leading-relaxed">
+                Every project in Rotaract District 3192 goes through a rigorous monitoring
+                and evaluation process to track actual community benefits, volunteer efficiency,
+                and resource transparency. This project has been assigned a premium Impact Score
+                of <strong>{project.impactScore}/100</strong>, reflecting high community mobilization
+                and resource sustainability.
+              </p>
+            </div>
+          </div>
+
+          {/* Sidebar Metrics Column */}
+          <div className="flex flex-col gap-6">
+            <h3 className="font-headline text-md font-bold text-white border-b border-slate-800/40 pb-2">
+              Key Metrics
+            </h3>
+
+            {/* Stats list */}
+            <div className="flex flex-col gap-4 font-metadata text-xs">
+              <div className="flex items-center gap-3.5 p-3 rounded-xl bg-navy-dark/40 border border-slate-800/40">
+                <Users className="w-5 h-5 text-electric-blue" />
+                <div>
+                  <p className="text-slate-500 font-bold uppercase text-[9px]">Beneficiaries</p>
+                  <p className="text-sm font-bold text-white mt-0.5">
+                    {project.beneficiaries.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3.5 p-3 rounded-xl bg-navy-dark/40 border border-slate-800/40">
+                <Clock className="w-5 h-5 text-ocean-glow" />
+                <div>
+                  <p className="text-slate-500 font-bold uppercase text-[9px]">Volunteer Hours</p>
+                  <p className="text-sm font-bold text-white mt-0.5">
+                    {project.volunteerHours} Hours
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3.5 p-3 rounded-xl bg-navy-dark/40 border border-slate-800/40">
+                <CircleDollarSign className="w-5 h-5 text-emerald-400" />
+                <div>
+                  <p className="text-slate-500 font-bold uppercase text-[9px]">Contributions</p>
+                  <p className="text-sm font-bold text-white mt-0.5">
+                    ₹{project.contributions.toLocaleString()} INR
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Metadata list */}
+            <div className="flex flex-col gap-3 pt-4 border-t border-slate-800/40 text-xs font-metadata text-slate-400">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-slate-500" />
+                <span>{project.location}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-slate-500" />
+                <span>Uploaded: {formatDate(project.uploadDate)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-slate-500" />
+                <span>Area: {project.areaOfFocus}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Heart className="w-4 h-4 text-slate-500" />
+                <span>Zone Assignment: {project.zone}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </GlassPanel>
+    </div>
+  );
+}
