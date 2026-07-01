@@ -9,8 +9,8 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
   const pathname = usePathname();
 
-  // Hide on auth and portal routes
-  if (pathname.startsWith('/portal') || pathname.startsWith('/login')) {
+  // Hide on auth, portal, and admin routes
+  if (pathname.startsWith('/portal') || pathname.startsWith('/login') || pathname.startsWith('/admin')) {
     return null;
   }
 

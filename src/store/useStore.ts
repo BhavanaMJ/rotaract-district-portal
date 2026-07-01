@@ -47,6 +47,17 @@ export interface Club {
   email: string;
 }
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  clubId: string;
+  clubName: string;
+  role: 'President' | 'Secretary' | 'Member' | 'District Admin' | 'Super Admin';
+  status: 'Active' | 'Suspended' | 'Pending';
+  joinedDate: string;
+}
+
 interface DistrictStats {
   totalProjects: number;
   totalVolunteers: number;
@@ -64,6 +75,8 @@ interface LeaderboardStats {
 interface StoreState {
   projects: Project[];
   clubs: Club[];
+  users: User[];
+  currentUser: User | null;
   stats: DistrictStats;
   
   // Filter states
@@ -402,6 +415,49 @@ const mockProjects: Project[] = [
 export const useStore = create<StoreState>((set, get) => ({
   projects: mockProjects,
   clubs: mockClubs,
+  users: [
+    {
+      id: "usr_1",
+      name: "Bhavana MJ",
+      email: "bhavana@rotaract3192.org",
+      clubId: "c1",
+      clubName: "Rotaract Club of Bengaluru Nava Chaitanya",
+      role: "Super Admin",
+      status: "Active",
+      joinedDate: "2023-01-15T00:00:00Z"
+    },
+    {
+      id: "usr_2",
+      name: "John Doe",
+      email: "john.doe@example.com",
+      clubId: "c2",
+      clubName: "Rotaract Club of Koramangala",
+      role: "President",
+      status: "Active",
+      joinedDate: "2023-06-20T00:00:00Z"
+    },
+    {
+      id: "usr_3",
+      name: "Jane Smith",
+      email: "jane.smith@example.com",
+      clubId: "c3",
+      clubName: "Rotaract Club of Indiranagar",
+      role: "Secretary",
+      status: "Active",
+      joinedDate: "2023-07-10T00:00:00Z"
+    },
+    {
+      id: "usr_4",
+      name: "Alex Johnson",
+      email: "alex@example.com",
+      clubId: "c1",
+      clubName: "Rotaract Club of Bengaluru Nava Chaitanya",
+      role: "Member",
+      status: "Pending",
+      joinedDate: "2023-11-05T00:00:00Z"
+    }
+  ],
+  currentUser: null,
   stats: {
     totalProjects: 450,
     totalVolunteers: 2500,

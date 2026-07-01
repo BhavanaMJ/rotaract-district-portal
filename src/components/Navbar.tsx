@@ -33,8 +33,8 @@ export default function Navbar() {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  // Hide on auth and portal routes
-  if (pathname.startsWith('/portal') || pathname.startsWith('/login')) {
+  // Hide on auth, portal, and admin routes
+  if (pathname.startsWith('/portal') || pathname.startsWith('/login') || pathname.startsWith('/admin')) {
     return null;
   }
 
