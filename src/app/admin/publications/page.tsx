@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import GlassPanel from "@/components/GlassPanel";
 import AdminDataTable from "@/components/admin/AdminDataTable";
-import { FileText, Plus, Eye, Edit2, Trash2 } from "lucide-react";
+import { FileText, Plus, Eye, Edit2, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Publication {
@@ -24,6 +24,39 @@ const mockPublications: Publication[] = [
 export default function AdminPublicationsPage() {
   const [pubs, setPubs] = useState<Publication[]>(mockPublications);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
+
+  // Form states
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState<"Newsletter" | "Press Release" | "Circular" | "Blog">("Circular");
+  const [author, setAuthor] = useState("DRR Team");
+  const [status, setStatus] = useState<"Draft" | "Published">("Published");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title || !author) return;
+
+    const newPub: Publication = {
+      id: `pub_${Date.now()}`,
+      title,
+      category,
+      author,
+      date: new Date().toISOString().split('T')[0],
+      status
+    };
+
+    setPubs([newPub, ...pubs]);
+    setTitle("");
+    setIsModalOpen(false);
+
+    setSuccessMsg("Publication created successfully!");
+    setTimeout(() => setSuccessMsg(""), 4000);
+  };
+
+  const handleDelete = (id: string) => {
+    setPubs(pubs.filter(p => p.id !== id));
+  };
 
   const filteredPubs = pubs.filter(pub => 
     pub.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -31,7 +64,15 @@ export default function AdminPublicationsPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6 max-w-[1600px] mx-auto pb-12 animate-fade-in">
+    <div className="flex flex-col gap-6 max-w-[1600px] mx-auto pb-12 animate-fade-in relative">
+      
+      {successMsg && (
+        <div className="fixed bottom-5 right-5 z-50 px-4 py-3 rounded-lg border border-emerald-500/30 bg-navy-dark/90 text-emerald-400 text-xs font-bold font-metadata shadow-[0_0_15px_rgba(16,185,129,0.25)] flex items-center gap-2 animate-slide-in">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          {successMsg}
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
         <div>
           <h1 className="font-headline text-3xl font-bold text-white tracking-tight">Publications</h1>
@@ -39,7 +80,10 @@ export default function AdminPublicationsPage() {
             Manage official district announcements, newsletters, circulars, and media.
           </p>
         </div>
-        <button className="px-4 py-2 flex items-center gap-2 rounded-lg bg-electric-blue text-navy-deep hover:bg-ocean-glow text-xs font-bold transition-colors shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="px-4 py-2 flex items-center gap-2 rounded-lg bg-electric-blue text-navy-deep hover:bg-ocean-glow text-xs font-bold transition-colors shadow-[0_0_15px_rgba(0,240,255,0.3)]"
+        >
           <Plus className="w-4 h-4" />
           Create Publication
         </button>
@@ -93,15 +137,19 @@ export default function AdminPublicationsPage() {
           },
           {
             header: "",
-            cell: () => (
+            cell: (pub) => (
               <div className="flex items-center gap-2 justify-end">
-                <button className="p-1.5 rounded bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">
+                <button className="p-1.5 rounded bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors" title="View">
                   <Eye className="w-4 h-4" />
                 </button>
-                <button className="p-1.5 rounded bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">
+                <button className="p-1.5 rounded bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors" title="Edit">
                   <Edit2 className="w-4 h-4" />
                 </button>
-                <button className="p-1.5 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors">
+                <button 
+                  onClick={() => handleDelete(pub.id)}
+                  className="p-1.5 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors"
+                  title="Delete"
+                >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -109,6 +157,86 @@ export default function AdminPublicationsPage() {
           }
         ]}
       />
+
+      {/* Creation Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-navy-deep/80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
+          
+          <GlassPanel className="w-full max-w-lg p-6 bg-navy-dark border-slate-700 relative z-10 flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
+              <h3 className="font-headline text-lg font-bold text-white flex items-center gap-2">
+                <FileText className="w-5 h-5 text-electric-blue" />
+                New Publication
+              </h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-metadata font-bold uppercase tracking-wider text-slate-500">Document Title</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="e.g. District Branding Guidelines 2026/27"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="px-3 py-2 rounded-lg bg-navy-deep border border-slate-800 focus:border-electric-blue/40 text-xs text-white focus:outline-none placeholder-slate-600"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="flex flex-col gap-1.5 col-span-1">
+                  <label className="text-[10px] font-metadata font-bold uppercase tracking-wider text-slate-500">Category</label>
+                  <select 
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value as any)}
+                    className="px-3 py-2 rounded-lg bg-navy-deep border border-slate-800 focus:border-electric-blue/40 text-xs text-slate-300 focus:outline-none"
+                  >
+                    <option value="Circular">Circular</option>
+                    <option value="Newsletter">Newsletter</option>
+                    <option value="Press Release">Press Release</option>
+                    <option value="Blog">Blog</option>
+                  </select>
+                </div>
+                
+                <div className="flex flex-col gap-1.5 col-span-1">
+                  <label className="text-[10px] font-metadata font-bold uppercase tracking-wider text-slate-500">Author</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={author}
+                    onChange={(e) => setAuthor(e.target.value)}
+                    className="px-3 py-2 rounded-lg bg-navy-deep border border-slate-800 focus:border-electric-blue/40 text-xs text-white focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5 col-span-1">
+                  <label className="text-[10px] font-metadata font-bold uppercase tracking-wider text-slate-500">Status</label>
+                  <select 
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as any)}
+                    className="px-3 py-2 rounded-lg bg-navy-deep border border-slate-800 focus:border-electric-blue/40 text-xs text-slate-300 focus:outline-none"
+                  >
+                    <option value="Published">Published</option>
+                    <option value="Draft">Draft</option>
+                  </select>
+                </div>
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full mt-2 py-2.5 rounded-lg bg-electric-blue hover:bg-ocean-glow text-navy-deep text-xs font-bold font-metadata transition-colors shadow-lg"
+              >
+                Create Document
+              </button>
+            </form>
+          </GlassPanel>
+        </div>
+      )}
+
     </div>
   );
 }
