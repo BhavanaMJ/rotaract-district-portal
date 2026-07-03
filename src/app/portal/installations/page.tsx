@@ -48,7 +48,7 @@ export default function InstallationsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/40 text-slate-300">
-                {installations.map((item) => (
+                {installations.map((item: any) => (
                   <tr key={item.id} className="hover:bg-navy-light/10 transition-colors">
                     <td className="py-4 px-6 font-bold flex items-center gap-2 text-white">
                       <Calendar className="w-3.5 h-3.5 text-slate-500" />

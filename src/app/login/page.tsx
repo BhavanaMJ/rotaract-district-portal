@@ -1,45 +1,84 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import WaveBackground from "@/components/WaveBackground";
 import GlassPanel from "@/components/GlassPanel";
-import { Waves, Mail, Lock, ArrowLeft, ArrowRight, UserPlus, Info, CheckCircle2, Phone, User } from "lucide-react";
-import { useStore } from "@/store/useStore";
-import { useAuth } from "@/hooks/useAuth";
+import { Waves, ArrowLeft, ArrowRight, UserPlus, CheckCircle2, Phone, User, LogIn, Mail } from "lucide-react";
+import { apiUrl } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoading, error: authError } = useAuth();
   const [view, setView] = useState<"login" | "request">("login");
-  const clubs = useStore((state) => state.clubs);
+  const [dbClubs, setDbClubs] = useState<{ id: string; name: string }[]>([]);
+  const [clubsError, setClubsError] = useState<string | null>(null);
   
-  // Login State
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // Fetch real clubs via server-side API route (bypasses CORS + RLS)
+  useEffect(() => {
+    async function fetchClubs() {
+      try {
+        const res = await fetch(apiUrl('/api/clubs'));
+        if (!res.ok) {
+          const json = await res.json();
+          console.error('Clubs API error:', json);
+          setClubsError('Could not load clubs. Please refresh.');
+          return;
+        }
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) setDbClubs(data);
+        else if (Array.isArray(data) && data.length === 0) setClubsError('No clubs found in database.');
+      } catch (e) {
+        console.error('Clubs fetch exception:', e);
+        setClubsError('Network error loading clubs.');
+      }
+    }
+    fetchClubs();
+  }, []);
   
   // Request State
   const [clubId, setClubId] = useState("");
   const [position, setPosition] = useState("President");
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLoginSubmit = async (e: React.FormEvent) => {
+  const handleRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(email, password);
-  };
+    if (!clubId || !position || !fullName || !email) {
+      alert("Please fill all required fields.");
+      return;
+    }
 
-  const handleRequestSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitted(true);
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(apiUrl('/api/access-requests'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          club_id: clubId,
+          requested_role: position,
+          full_name: fullName,
+          email,
+          phone: phone || null,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Failed to submit');
+      setIsSubmitted(true);
+    } catch (err: any) {
+      console.error("Failed to submit access request:", err);
+      alert(err.message || "Failed to submit request. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetForm = () => {
     setEmail("");
-    setPassword("");
     setClubId("");
     setPosition("President");
     setFullName("");
@@ -48,8 +87,19 @@ export default function LoginPage() {
     setView("login");
   };
 
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const isUnauthorized = searchParams?.get("error") === "unauthorized";
+
   return (
-    <div className="relative min-h-[90vh] flex items-center justify-center px-6 py-12 overflow-hidden font-body">
+    <div className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 py-12 overflow-hidden font-body">
+      
+      {isUnauthorized && (
+        <div className="z-50 mb-6 bg-red-500/10 border border-red-500/50 text-red-200 px-6 py-4 rounded-xl max-w-md w-full text-center text-sm font-bold shadow-xl animate-fade-in">
+          ⚠️ Authentication Error: Your Clerk account is not linked to any active District Profile. 
+          Please request access below first, or sign in with an approved email.
+        </div>
+      )}
+
       {/* Floating Wave Background */}
       <WaveBackground intensity={0.5} particleCount={25} />
 
@@ -81,61 +131,15 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Login Form */}
-            <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
-              {/* Email Input */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase font-bold text-slate-500 font-metadata">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="clubname@rotaract3192.org"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-navy-deep/60 border border-slate-800 focus:border-electric-blue/40 text-xs text-slate-200 placeholder-slate-600 focus:outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Password Input */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] uppercase font-bold text-slate-500 font-metadata">Password</label>
-                  <a href="#" className="text-[10px] text-ocean-glow hover:underline font-metadata font-bold">
-                    Forgot?
-                  </a>
-                </div>
-                <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-navy-deep/60 border border-slate-800 focus:border-electric-blue/40 text-xs text-slate-200 placeholder-slate-600 focus:outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              {authError && (
-                <div className="text-red-500 text-[10px] font-bold text-center mt-2 font-metadata uppercase tracking-wider border border-red-500/20 bg-red-500/10 py-2 rounded-lg">
-                  {authError}
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 mt-4 rounded-xl bg-electric-blue hover:bg-ocean-glow text-navy-deep font-bold text-xs uppercase tracking-wider transition-all focus:outline-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            <div className="flex flex-col gap-5 mt-6">
+              <Link
+                href="/sign-in"
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-electric-blue hover:bg-ocean-glow text-navy-deep font-bold text-xs uppercase tracking-wider transition-all focus:outline-none active:scale-95"
               >
-                {isLoading ? "Authenticating..." : "Enter Dashboard"}
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
+                Sign In Securely
+                <LogIn className="w-4 h-4" />
+              </Link>
+            </div>
 
             {/* Navigation to Access Request */}
             <div className="mt-8 pt-6 border-t border-slate-800/40 text-center font-metadata text-xs">
@@ -173,11 +177,20 @@ export default function LoginPage() {
                       onChange={(e) => setClubId(e.target.value)}
                       className="w-full px-4 py-3 rounded-xl bg-navy-deep/60 border border-slate-800 focus:border-electric-blue/40 text-xs text-slate-200 placeholder-slate-600 focus:outline-none transition-all"
                     >
-                      <option value="" disabled>Select your Club</option>
-                      {clubs.map((c) => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
+                      {dbClubs.length === 0 ? (
+                        <option value="" disabled>{clubsError ?? "Loading clubs..."}</option>
+                      ) : (
+                        <>
+                          <option value="" disabled>Select your Club</option>
+                          {dbClubs.map((c) => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                          ))}
+                        </>
+                      )}
                     </select>
+                    {clubsError && (
+                      <p className="text-[10px] text-red-400 font-metadata">{clubsError}</p>
+                    )}
                   </div>
 
                   <div className="flex flex-col gap-1.5">
@@ -241,9 +254,10 @@ export default function LoginPage() {
 
                   <button
                     type="submit"
-                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 mt-2 rounded-xl bg-electric-blue hover:bg-ocean-glow text-navy-deep font-bold text-xs uppercase tracking-wider transition-all focus:outline-none active:scale-95"
+                    disabled={isSubmitting}
+                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 mt-2 rounded-xl bg-electric-blue hover:bg-ocean-glow text-navy-deep font-bold text-xs uppercase tracking-wider transition-all focus:outline-none active:scale-95 disabled:opacity-50"
                   >
-                    Submit Request
+                    {isSubmitting ? "Submitting..." : "Submit Request"}
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </form>

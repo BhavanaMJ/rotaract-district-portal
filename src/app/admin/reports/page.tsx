@@ -2,14 +2,11 @@
 
 import React, { useState } from "react";
 import GlassPanel from "@/components/GlassPanel";
-import { FileDown, FileText, Database, Shield } from "lucide-react";
-import { useStore } from "@/store/useStore";
+import { FileDown, FileText, Database, Shield, Loader2 } from "lucide-react";
 
 export default function AdminReportsPage() {
-  const clubs = useStore((state) => state.clubs);
-  const projects = useStore((state) => state.projects);
-  const users = useStore((state) => state.users);
   const [successMsg, setSuccessMsg] = useState("");
+  const [downloading, setDownloading] = useState<string | null>(null);
 
   const downloadCSV = (content: string, filename: string) => {
     const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
@@ -26,56 +23,86 @@ export default function AdminReportsPage() {
     setTimeout(() => setSuccessMsg(""), 4000);
   };
 
-  const handleExportClubs = () => {
-    const headers = ["ID", "Name", "President", "Charter Year", "Members", "Projects", "Points", "Zone", "Email"];
-    const rows = clubs.map(c => [
-      c.id,
-      `"${c.name.replace(/"/g, '""')}"`,
-      `"${c.president.replace(/"/g, '""')}"`,
-      c.charterYear,
-      c.memberCount,
-      c.totalProjects,
-      c.totalPoints,
-      c.zone,
-      c.email
-    ]);
+  const handleExportClubs = async () => {
+    setDownloading("clubs");
+    try {
+      const res = await fetch('/rotaract-district-portal/api/admin/reports?type=clubs');
+      if (!res.ok) throw new Error("Failed to fetch reports");
+      const data = await res.json();
+      
+      const headers = ["Club ID", "Club Name", "Charter Date", "Status", "Member Count", "Total Projects", "Total Points"];
+      const rows = data.map((c: any) => [
+        c.id,
+        `"${c.name.replace(/"/g, '""')}"`,
+        c.charterDate,
+        c.status,
+        c.memberCount,
+        c.totalProjects,
+        c.totalPoints
+      ]);
 
-    const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-    downloadCSV(csvContent, "District_3192_Clubs_Directory.csv");
+      const csvContent = [headers.join(","), ...rows.map((r: any) => r.join(","))].join("\n");
+      downloadCSV(csvContent, "District_3192_Clubs_Directory.csv");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to export clubs data.");
+    } finally {
+      setDownloading(null);
+    }
   };
 
-  const handleExportProjects = () => {
-    const headers = ["ID", "Title", "Club Name", "Avenue of Service", "Impact Score", "Volunteer Hours", "Contributions", "Beneficiaries", "Status"];
-    const rows = projects.map(p => [
-      p.id,
-      `"${p.title.replace(/"/g, '""')}"`,
-      `"${p.clubName.replace(/"/g, '""')}"`,
-      `"${p.avenueOfService.replace(/"/g, '""')}"`,
-      p.impactScore,
-      p.volunteerHours,
-      p.contributions,
-      p.beneficiaries,
-      "Published"
-    ]);
+  const handleExportProjects = async () => {
+    setDownloading("projects");
+    try {
+      const res = await fetch('/rotaract-district-portal/api/admin/reports?type=projects');
+      if (!res.ok) throw new Error("Failed to fetch reports");
+      const data = await res.json();
 
-    const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-    downloadCSV(csvContent, "District_3192_Projects_Telemetry.csv");
+      const headers = ["ID", "Title", "Type", "Status", "Club Name", "Start Date", "Venue", "Description"];
+      const rows = data.map((p: any) => [
+        p.id,
+        `"${p.title.replace(/"/g, '""')}"`,
+        p.type,
+        p.status,
+        `"${p.clubName.replace(/"/g, '""')}"`,
+        p.startDate,
+        `"${p.venue.replace(/"/g, '""')}"`,
+        `"${p.description.replace(/"/g, '""').substring(0, 1000)}"` // Limit description length in CSV to avoid breaking cells
+      ]);
+
+      const csvContent = [headers.join(","), ...rows.map((r: any) => r.join(","))].join("\n");
+      downloadCSV(csvContent, "District_3192_Projects_Telemetry.csv");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to export projects telemetry.");
+    } finally {
+      setDownloading(null);
+    }
   };
 
-  const handleExportLeaderboard = () => {
-    const sorted = [...clubs].sort((a, b) => b.totalPoints - a.totalPoints);
-    const headers = ["Rank", "Club ID", "Club Name", "Zone", "Total Projects", "Total Points"];
-    const rows = sorted.map((c, idx) => [
-      idx + 1,
-      c.id,
-      `"${c.name.replace(/"/g, '""')}"`,
-      c.zone,
-      c.totalProjects,
-      c.totalPoints
-    ]);
+  const handleExportLeaderboard = async () => {
+    setDownloading("leaderboard");
+    try {
+      const res = await fetch('/rotaract-district-portal/api/admin/reports?type=leaderboard');
+      if (!res.ok) throw new Error("Failed to fetch reports");
+      const data = await res.json();
 
-    const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-    downloadCSV(csvContent, "District_3192_Leaderboard_Audit.csv");
+      const headers = ["Rank", "Club ID", "Club Name", "Total Points"];
+      const rows = data.map((c: any, idx: number) => [
+        idx + 1,
+        c.clubId,
+        `"${c.clubName.replace(/"/g, '""')}"`,
+        c.points
+      ]);
+
+      const csvContent = [headers.join(","), ...rows.map((r: any) => r.join(","))].join("\n");
+      downloadCSV(csvContent, "District_3192_Leaderboard_Audit.csv");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to export leaderboard standings.");
+    } finally {
+      setDownloading(null);
+    }
   };
 
   return (
@@ -113,13 +140,22 @@ export default function AdminReportsPage() {
             </div>
           </div>
           <p className="text-xs text-slate-300 font-body leading-relaxed flex-1">
-            Export a full directory of all active and inactive clubs in District 3192 including member counts, chartered years, officer list, emails, and points.
+            Export a full directory of all active and inactive clubs in District 3192 including member counts, chartered dates, status, and points.
           </p>
           <button 
             onClick={handleExportClubs}
-            className="w-full py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold font-metadata transition-colors flex items-center justify-center gap-2"
+            disabled={downloading !== null}
+            className="w-full py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold font-metadata transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
-            <FileDown className="w-4 h-4" /> Download CSV
+            {downloading === 'clubs' ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Compiling CSV...
+              </>
+            ) : (
+              <>
+                <FileDown className="w-4 h-4" /> Download CSV
+              </>
+            )}
           </button>
         </GlassPanel>
 
@@ -131,17 +167,26 @@ export default function AdminReportsPage() {
             </div>
             <div>
               <h3 className="font-headline text-base font-bold text-white leading-tight">Project Submissions</h3>
-              <p className="text-[10px] text-slate-500 font-metadata uppercase tracking-wider">Impact & Volunteer Hours</p>
+              <p className="text-[10px] text-slate-500 font-metadata uppercase tracking-wider">Impact & Description Logs</p>
             </div>
           </div>
           <p className="text-xs text-slate-300 font-body leading-relaxed flex-1">
-            Export a compilation of all submitted projects across the district. Contains beneficiary counts, volunteer hours, contributions, avenues of service, and descriptions.
+            Export a compilation of all submitted activities and projects across the district. Contains statuses, venues, description logs, and parent clubs.
           </p>
           <button 
             onClick={handleExportProjects}
-            className="w-full py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold font-metadata transition-colors flex items-center justify-center gap-2"
+            disabled={downloading !== null}
+            className="w-full py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold font-metadata transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
-            <FileDown className="w-4 h-4" /> Download CSV
+            {downloading === 'projects' ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Compiling CSV...
+              </>
+            ) : (
+              <>
+                <FileDown className="w-4 h-4" /> Download CSV
+              </>
+            )}
           </button>
         </GlassPanel>
 
@@ -152,18 +197,27 @@ export default function AdminReportsPage() {
               <Shield className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
-              <h3 className="font-headline text-base font-bold text-white leading-tight">Leaderboard History</h3>
-              <p className="text-[10px] text-slate-500 font-metadata uppercase tracking-wider">Points Telemetry</p>
+              <h3 className="font-headline text-base font-bold text-white leading-tight">Leaderboard Standings</h3>
+              <p className="text-[10px] text-slate-500 font-metadata uppercase tracking-wider">Points Rankings</p>
             </div>
           </div>
           <p className="text-xs text-slate-300 font-body leading-relaxed flex-1">
-            Download the point logs, historical standings, and weight config changes for audits.
+            Download the point leaderboard standings of all clubs in District 3192 computed from the live transaction points ledger.
           </p>
           <button 
             onClick={handleExportLeaderboard}
-            className="w-full py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold font-metadata transition-colors flex items-center justify-center gap-2"
+            disabled={downloading !== null}
+            className="w-full py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold font-metadata transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
-            <FileDown className="w-4 h-4" /> Download CSV
+            {downloading === 'leaderboard' ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Compiling CSV...
+              </>
+            ) : (
+              <>
+                <FileDown className="w-4 h-4" /> Download CSV
+              </>
+            )}
           </button>
         </GlassPanel>
       </div>

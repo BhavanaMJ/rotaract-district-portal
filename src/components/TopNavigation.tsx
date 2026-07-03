@@ -3,8 +3,11 @@
 import React from "react";
 import { Search, Bell, User } from "lucide-react";
 import Link from "next/link";
+import { UserButton } from "@clerk/nextjs";
+import { usePortalUser } from "./PortalUserProvider";
 
 export default function TopNavigation() {
+  const { user } = usePortalUser();
   return (
     <header className="h-20 border-b border-slate-800/60 bg-navy-deep/80 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-30">
       {/* Search Bar */}
@@ -28,11 +31,21 @@ export default function TopNavigation() {
 
         <Link href="/portal/profile" className="flex items-center gap-3 group">
           <div className="text-right hidden sm:block">
-            <p className="text-xs font-bold text-white group-hover:text-electric-blue transition-colors">Rtr. Jane Doe</p>
-            <p className="text-[10px] font-metadata text-slate-500 uppercase">President</p>
+            <p className="text-xs font-bold text-white group-hover:text-electric-blue transition-colors">
+              Rtr. {user?.name || "Member"}
+            </p>
+            <p className="text-[10px] font-metadata text-slate-500 uppercase">
+              {user?.role || "Member"}
+            </p>
           </div>
           <div className="w-9 h-9 rounded-full bg-navy-dark border border-slate-700/60 flex items-center justify-center overflow-hidden">
-            <User className="w-4 h-4 text-slate-400" />
+            <UserButton 
+              appearance={{
+                elements: {
+                  avatarBox: "w-9 h-9"
+                }
+              }} 
+            />
           </div>
         </Link>
       </div>

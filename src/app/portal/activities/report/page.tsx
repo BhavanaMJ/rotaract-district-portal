@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { ArrowLeft, Save, Send, CheckCircle2, UploadCloud } from "lucide-react";
+import { ArrowLeft, Save, Send, CheckCircle2, UploadCloud, Loader2 } from "lucide-react";
+import { useCreateActivity } from "@/mutations/activity.mutations";
+import { useProfile } from "@/hooks/useProfile";
 
 // Form Schema Definition
 const reportSchema = z.object({
@@ -55,6 +57,9 @@ const steps = [
 export default function ReportActivityPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const { club } = useProfile();
+  const { mutateAsync: createActivity, isPending } = useCreateActivity();
 
   const {
     register,
@@ -97,9 +102,38 @@ export default function ReportActivityPage() {
     if (currentStep > 1) setCurrentStep(prev => prev - 1);
   };
 
-  const onSubmit = (data: ReportFormValues) => {
-    console.log("Activity Submitted:", data);
-    setIsSubmitted(true);
+  const onSubmit = async (data: ReportFormValues) => {
+    try {
+      setErrorMsg("");
+      const payload: any = {
+        club_id: club?.id || "d157a16b-1234-4b45-9a8b-319200000000",
+        title: data.title,
+        description: data.description,
+        status: "DRAFT",
+        activity_category: data.activityType,
+        is_external_ngo: data.externalNGO || false,
+        organization_name: data.organizationName || null,
+        avenues: data.avenues,
+        focus_areas: data.focusAreas,
+        activity_expenses: data.activityExpenses || 0,
+        cash_contribution: data.cashContribution || 0,
+        in_kind_contribution: data.inKindContribution || 0,
+        participants: data.participants,
+        beneficiaries: data.beneficiaries,
+        volunteers: data.volunteers,
+        volunteer_hours: data.volunteerHours,
+        submit_for_publication: data.submitForPublication || false,
+        feature_activity: data.featureActivity || false,
+        start_date: new Date(data.startDate).toISOString(),
+        end_date: new Date(data.endDate).toISOString(),
+        location: data.venue,
+      };
+
+      await createActivity(payload);
+      setIsSubmitted(true);
+    } catch (err: any) {
+      setErrorMsg(err.message || "Failed to submit activity");
+    }
   };
 
   if (isSubmitted) {
@@ -133,6 +167,12 @@ export default function ReportActivityPage() {
           Submit details about your club's project to record impact and qualify for district rankings.
         </p>
       </div>
+
+      {errorMsg && (
+        <div className="text-red-500 text-xs font-bold bg-red-500/10 border border-red-500/20 p-3 rounded-xl font-metadata uppercase tracking-wider">
+          {errorMsg}
+        </div>
+      )}
 
       {/* Progress Bar */}
       <div className="flex items-center justify-between relative mb-4">
@@ -422,9 +462,18 @@ export default function ReportActivityPage() {
             ) : (
               <button
                 type="submit"
-                className="px-8 py-2.5 rounded-lg bg-gradient-to-r from-electric-blue to-ocean-glow text-navy-deep hover:opacity-90 transition-opacity text-sm font-bold flex items-center gap-2"
+                disabled={isPending}
+                className="px-8 py-2.5 rounded-lg bg-gradient-to-r from-electric-blue to-ocean-glow text-navy-deep hover:opacity-90 transition-opacity text-sm font-bold flex items-center gap-2 disabled:opacity-55 disabled:cursor-not-allowed"
               >
-                <Send className="w-4 h-4" /> Submit Activity
+                {isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" /> Submit Activity
+                  </>
+                )}
               </button>
             )}
           </div>

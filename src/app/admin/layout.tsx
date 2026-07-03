@@ -1,49 +1,68 @@
-"use client";
+import { auth, currentUser } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
+import { generateSupabaseJWT } from '@/lib/jwt';
+import AdminLayoutClient from './AdminLayoutClient';
 
-import React, { useEffect, useState } from "react";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import AdminTopNav from "@/components/admin/AdminTopNav";
-import CommandPalette from "@/components/admin/CommandPalette";
-
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [mounted, setMounted] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const user = await currentUser();
+  const userId = user?.id;
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  if (!userId || !user) {
+    redirect('/sign-in');
+  }
 
-  if (!mounted) return null;
+  const email = user.emailAddresses[0]?.emailAddress;
+  if (!email) {
+    redirect('/portal/dashboard');
+  }
 
-  return (
-    <div className="min-h-screen bg-navy-deep flex text-slate-100 font-sans selection:bg-cyan-500/20 selection:text-electric-blue overflow-hidden">
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-navy-deep/60 backdrop-blur-sm z-30 lg:hidden" 
-          onClick={() => setSidebarOpen(false)} 
-        />
-      )}
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const apiKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const bearerToken = await generateSupabaseJWT('service_role');
 
-      {/* Persistent/Responsive Sidebar */}
-      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <AdminTopNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        <main className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-8 bg-gradient-to-b from-navy-deep to-navy-dark/40 relative">
-          {/* Subtle grid background for structural feel */}
-          <div className="absolute inset-0 bg-[url('/images/grid-pattern.svg')] opacity-[0.03] pointer-events-none -z-10" />
-          {children}
-        </main>
-      </div>
-      
-      {/* Global Command Palette */}
-      <CommandPalette />
-    </div>
-  );
+  const headers = {
+    'apikey': apiKey,
+    'Authorization': `Bearer ${bearerToken}`,
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    const resProfile = await fetch(`${supabaseUrl}/rest/v1/member_profiles?email=eq.${encodeURIComponent(email)}&select=id`, {
+      headers,
+      cache: 'no-store'
+    });
+    
+    if (resProfile.ok) {
+      const profiles = await resProfile.json();
+      if (profiles && profiles.length > 0) {
+        const resRoles = await fetch(`${supabaseUrl}/rest/v1/member_roles?member_id=eq.${profiles[0].id}&select=role`, {
+          headers,
+          cache: 'no-store'
+        });
+        
+        if (resRoles.ok) {
+          const roles = await resRoles.json();
+          const roleStrings = roles.map((r: any) => r.role);
+          
+          if (
+            roleStrings.includes('District Admin') || 
+            roleStrings.includes('District Core Team') || 
+            roleStrings.includes('Super Admin') || 
+            roleStrings.includes('Admin')
+          ) {
+            return <AdminLayoutClient>{children}</AdminLayoutClient>;
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error verifying admin role:", error);
+  }
+
+  // If we reach here, they are not an admin
+  redirect('/portal/dashboard');
 }

@@ -1,28 +1,81 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import GlassPanel from "@/components/GlassPanel";
-import { ClipboardList, Terminal, User, Shield } from "lucide-react";
+import { ClipboardList, Terminal, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface AuditLog {
-  id: string;
-  user: string;
-  action: string;
-  ip: string;
-  timestamp: string;
-  severity: "Info" | "Warning" | "Critical";
-}
-
-const mockLogs: AuditLog[] = [
-  { id: "log_1", user: "Bhavana MJ (Super Admin)", action: "Updated leaderboard weight configuration", ip: "192.168.1.42", timestamp: "2026-07-01 12:45 PM", severity: "Warning" },
-  { id: "log_2", user: "Bhavana MJ (Super Admin)", action: "Approved access request for Rtr. Jane Doe", ip: "192.168.1.42", timestamp: "2026-07-01 11:20 AM", severity: "Info" },
-  { id: "log_3", user: "System Engine", action: "Automatic database cache compaction completed", ip: "localhost", timestamp: "2026-07-01 04:00 AM", severity: "Info" },
-  { id: "log_4", user: "System Engine", action: "Failed admin login attempt from unregistered IP", ip: "103.45.12.98", timestamp: "2026-06-30 08:15 PM", severity: "Critical" },
-];
+import { supabase } from "@/lib/supabase";
 
 export default function AdminAuditLogsPage() {
-  const [logs] = useState<AuditLog[]>(mockLogs);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchLogs() {
+      try {
+        const { data, error } = await supabase
+          .from("audit_logs")
+          .select(`
+            id,
+            action,
+            created_at,
+            table_name,
+            new_data,
+            member_profiles (
+              first_name,
+              last_name,
+              email
+            )
+          `)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false })
+          .limit(50);
+        
+        if (error) throw error;
+        
+        if (data) {
+          const mapped = data.map((log: any) => {
+            const actorName = log.member_profiles 
+              ? `${log.member_profiles.first_name} ${log.member_profiles.last_name}`
+              : "System/Automation";
+            
+            // Map actions or details into user-friendly description
+            let userActionDesc = `Performed ${log.action} on ${log.table_name}`;
+            if (log.action === "APPROVE_ACCESS" && log.new_data) {
+              const nd = typeof log.new_data === "string" ? JSON.parse(log.new_data) : log.new_data;
+              userActionDesc = `Approved access request for ${nd.user_email} as ${nd.role}`;
+            } else if (log.action === "REJECT_ACCESS" && log.new_data) {
+              const nd = typeof log.new_data === "string" ? JSON.parse(log.new_data) : log.new_data;
+              userActionDesc = `Rejected access request for ${nd.user_email}`;
+            }
+            
+            // Severity mapping based on action type
+            let severity: "Info" | "Warning" | "Critical" = "Info";
+            if (log.action.includes("DELETE") || log.action.includes("REJECT")) {
+              severity = "Warning";
+            } else if (log.action.includes("ERROR") || log.action.includes("CRITICAL")) {
+              severity = "Critical";
+            }
+
+            return {
+              id: log.id,
+              user: actorName,
+              action: userActionDesc,
+              ip: log.member_profiles?.email || "System",
+              timestamp: new Date(log.created_at).toLocaleString(),
+              severity
+            };
+          });
+          setLogs(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to fetch audit logs:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchLogs();
+  }, []);
 
   return (
     <div className="flex flex-col gap-6 max-w-[1200px] mx-auto pb-12 animate-fade-in">

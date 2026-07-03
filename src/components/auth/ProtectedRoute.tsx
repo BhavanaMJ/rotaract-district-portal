@@ -11,7 +11,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && !session) {
-      router.replace(`/login?redirectedFrom=${pathname}`);
+      router.replace(`/sign-in?redirect_url=${pathname}`);
     }
   }, [isLoading, session, router, pathname]);
 

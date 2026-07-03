@@ -2,7 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useClerk } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   Layers,
@@ -18,6 +19,8 @@ import {
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { signOut } = useClerk();
 
   const navItems = [
     { name: "Dashboard", href: "/portal/dashboard", icon: LayoutDashboard },
@@ -110,12 +113,6 @@ export default function Sidebar() {
           <ArrowLeft className="w-4 h-4" />
           Return to Showcase
         </Link>
-        <button
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-metadata font-bold text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-all text-left"
-        >
-          <LogOut className="w-4 h-4" />
-          Logout
-        </button>
       </div>
     </aside>
   );

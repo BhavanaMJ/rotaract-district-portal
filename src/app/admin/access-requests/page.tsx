@@ -1,63 +1,87 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AdminDataTable from "@/components/admin/AdminDataTable";
 import { UserCheck, Shield, ThumbsUp, ThumbsDown, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiUrl } from "@/lib/api";
 
 interface AccessRequest {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   clubName: string;
+  clubId: string;
   requestedRole: string;
   submissionDate: string;
-  status: "Pending" | "Approved" | "Rejected";
+  status: string;
 }
 
-const initialRequests: AccessRequest[] = [
-  {
-    id: "req_1",
-    name: "Rtr. Rohan Kamath",
-    email: "rohan.kamath@rvce.edu.in",
-    clubName: "Rotaract Club of RV College of Engineering",
-    requestedRole: "President",
-    submissionDate: "2026-06-30T10:00:00Z",
-    status: "Pending"
-  },
-  {
-    id: "req_2",
-    name: "Rtr. Ananya Sharma",
-    email: "ananya.sharma@southrotaract.org",
-    clubName: "Rotaract Club of Bengaluru South",
-    requestedRole: "President",
-    submissionDate: "2026-06-29T14:30:00Z",
-    status: "Pending"
-  },
-  {
-    id: "req_3",
-    name: "Rtr. Vikram Aditya",
-    email: "vikram@indiranagarrotaract.org",
-    clubName: "Rotaract Club of Indira Nagar",
-    requestedRole: "Secretary",
-    submissionDate: "2026-06-28T09:15:00Z",
-    status: "Pending"
-  }
-];
-
 export default function AdminAccessRequestsPage() {
-  const [requests, setRequests] = useState<AccessRequest[]>(initialRequests);
+  const [requests, setRequests] = useState<AccessRequest[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const handleAction = (id: string, name: string, newStatus: "Approved" | "Rejected") => {
-    setRequests(prev => prev.map(req => req.id === id ? { ...req, status: newStatus } : req));
-    setSuccessMsg(`Officer ${name} has been ${newStatus.toLowerCase()}!`);
-    setTimeout(() => setSuccessMsg(""), 4000);
+  useEffect(() => {
+    async function fetchRequests() {
+      try {
+        const res = await fetch(apiUrl('/api/admin/access-requests'));
+        if (!res.ok) {
+          throw new Error('Failed to load requests');
+        }
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const mapped = data.map((r: any) => ({
+            id: r.id,
+            name: r.full_name,
+            email: r.email,
+            phone: r.phone,
+            clubName: r.clubs?.name || "Unknown Club",
+            clubId: r.club_id,
+            requestedRole: r.requested_role,
+            submissionDate: r.created_at,
+            status: r.status
+          }));
+          setRequests(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to fetch access requests:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchRequests();
+  }, []);
+
+  const handleAction = async (req: any, newStatus: "Approved" | "Rejected") => {
+    try {
+      const res = await fetch(apiUrl('/api/admin/access-requests'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestId: req.id,
+          action: newStatus,
+        }),
+      });
+
+      if (!res.ok) {
+        const result = await res.json();
+        throw new Error(result.error || 'Failed to execute action');
+      }
+
+      // Update local state
+      setRequests(prev => prev.filter(r => r.id !== req.id));
+      setSuccessMsg(`Officer ${req.name} has been ${newStatus.toLowerCase()}!`);
+      setTimeout(() => setSuccessMsg(""), 4000);
+    } catch (err: any) {
+      console.error(`Failed to execute ${newStatus.toLowerCase()} action:`, err);
+      alert(err.message || `Failed to perform action.`);
+    }
   };
 
   const pendingRequests = requests.filter(req => 
-    req.status === "Pending" &&
     (req.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
      req.clubName.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -124,13 +148,13 @@ export default function AdminAccessRequestsPage() {
             cell: (req) => (
               <div className="flex items-center gap-2 justify-end">
                 <button 
-                  onClick={() => handleAction(req.id, req.name, "Approved")}
+                  onClick={() => handleAction(req, "Approved")}
                   className="p-1.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-colors flex items-center gap-1.5 text-xs font-bold font-metadata"
                 >
                   <ThumbsUp className="w-3.5 h-3.5" /> Approve
                 </button>
                 <button 
-                  onClick={() => handleAction(req.id, req.name, "Rejected")}
+                  onClick={() => handleAction(req, "Rejected")}
                   className="p-1.5 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors flex items-center gap-1.5 text-xs font-bold font-metadata"
                 >
                   <ThumbsDown className="w-3.5 h-3.5" /> Reject

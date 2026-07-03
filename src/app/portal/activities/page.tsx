@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useStore } from "@/store/useStore";
 import {
   useReactTable,
   getCoreRowModel,
@@ -14,14 +13,39 @@ import {
   SortingState,
 } from "@tanstack/react-table";
 import { Plus, Search, ArrowUpDown, MoreHorizontal, Edit, Trash2, Eye } from "lucide-react";
-import { Project } from "@/store/useStore";
+import { useActivityList } from "@/queries/activity.queries";
+
+interface Project {
+  id: string;
+  title: string;
+  coverImage: string;
+  uploadDate: string;
+  avenueOfService: string;
+  impactScore: number;
+}
 
 export default function ActivitiesPage() {
-  const projects = useStore((state) => state.projects);
+  const { data: listResult, isLoading } = useActivityList({
+    pagination: { page: 1, pageSize: 50 },
+    sort: { column: "start_time", ascending: false }
+  });
+  
+  // Cast or map the API data to match the UI's expected Project interface
+  const projects = React.useMemo(() => {
+    return (listResult?.data || []).map((activity: any) => ({
+      id: activity.id,
+      title: activity.title || "Untitled Activity",
+      coverImage: activity.cover_image || "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=800&q=80",
+      uploadDate: activity.created_at || new Date().toISOString(),
+      avenueOfService: activity.avenues?.[0] || "General",
+      impactScore: activity.status === 'PUBLISHED' ? 100 : 50,
+    }));
+  }, [listResult?.data]);
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
 
-  const columns: ColumnDef<Project>[] = [
+  const columns = React.useMemo<ColumnDef<Project>[]>(() => [
     {
       accessorKey: "coverImage",
       header: "Cover",
@@ -93,7 +117,7 @@ export default function ActivitiesPage() {
         </div>
       ),
     },
-  ];
+  ], []);
 
   const table = useReactTable({
     data: projects,

@@ -1,4 +1,5 @@
-import { supabase, handleSupabaseError } from '@/lib/supabase';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { handleSupabaseError } from '@/lib/supabase';
 import type { Database } from '@/types/database.types';
 import type { QueryOptions, PaginatedResponse } from '@/types/api.types';
 
@@ -7,6 +8,7 @@ type TableName = keyof Database['public']['Tables'];
 /**
  * Generic Base Repository providing advanced CRUD operations
  * including Pagination, Sorting, Search, and Filtering.
+ * Uses the server-side service_role Supabase client to bypass RLS.
  */
 export class BaseRepository<T extends TableName> {
   protected table: T;
@@ -18,6 +20,7 @@ export class BaseRepository<T extends TableName> {
   /** Fetch a single record by ID */
   async findById(id: string): Promise<Database['public']['Tables'][T]['Row'] | null> {
     try {
+      const supabase = await createServerSupabaseClient();
       const { data, error } = await (supabase
         .from(this.table)
         .select('*') as any)
@@ -39,6 +42,7 @@ export class BaseRepository<T extends TableName> {
    */
   async findMany(options: QueryOptions = {}): Promise<PaginatedResponse<Database['public']['Tables'][T]['Row']>> {
     try {
+      const supabase = await createServerSupabaseClient();
       let query = supabase
         .from(this.table)
         .select('*', { count: 'exact' })
@@ -97,6 +101,7 @@ export class BaseRepository<T extends TableName> {
   /** Create a new record */
   async create(payload: Database['public']['Tables'][T]['Insert']): Promise<Database['public']['Tables'][T]['Row']> {
     try {
+      const supabase = await createServerSupabaseClient();
       const { data, error } = await supabase
         .from(this.table)
         .insert(payload as any)
@@ -114,6 +119,7 @@ export class BaseRepository<T extends TableName> {
   /** Update an existing record */
   async update(id: string, payload: Database['public']['Tables'][T]['Update']): Promise<Database['public']['Tables'][T]['Row']> {
     try {
+      const supabase = await createServerSupabaseClient();
       const { data, error } = await (supabase
         .from(this.table)
         .update(payload as any) as any)
@@ -132,6 +138,7 @@ export class BaseRepository<T extends TableName> {
   /** Soft delete a record */
   async softDelete(id: string): Promise<void> {
     try {
+      const supabase = await createServerSupabaseClient();
       const { error } = await (supabase
         .from(this.table)
         .update({ deleted_at: new Date().toISOString() } as any) as any)

@@ -1,4 +1,5 @@
-import { supabase, handleSupabaseError } from '@/lib/supabase';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { handleSupabaseError } from '@/lib/supabase';
 import { authRepository } from '@/repositories/auth.repository';
 import type { Database } from '@/types/database.types';
 
@@ -21,6 +22,8 @@ export class AuthService {
    */
   async getFullUserProfile(authId: string): Promise<AuthUserProfile | null> {
     try {
+      const supabase = await createServerSupabaseClient();
+
       // 1. Fetch Profile
       const { data: profile, error: profileErr } = await supabase
         .from('member_profiles')

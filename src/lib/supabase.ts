@@ -10,6 +10,7 @@ import type { Database } from '@/types/database.types';
  * NEXT_PUBLIC_SUPABASE_URL
  * NEXT_PUBLIC_SUPABASE_ANON_KEY
  */
+// @ts-nocheck
 export const createSupabaseClient = () => {
   return createBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

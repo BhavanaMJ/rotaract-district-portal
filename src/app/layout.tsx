@@ -28,33 +28,44 @@ export const metadata: Metadata = {
   description: "Explore the collective community service projects, clubs, active volunteers, and social impact stories in Rotaract District 3192.",
 };
 
+import { ClerkProvider } from '@clerk/nextjs'
+
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${libreCaslon.variable} ${dmSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
+    <ClerkProvider
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      signInFallbackRedirectUrl="/sync"
+      signUpFallbackRedirectUrl="/sync"
     >
-      <body className="min-h-full flex flex-col bg-navy-deep text-slate-100 font-sans selection:bg-cyan-500/20 selection:text-electric-blue">
-        <QueryProvider>
-          {/* Sticky Global Navigation */}
-          <Navbar />
-          
-          {/* Main Content Area */}
-          <main className="flex-grow pt-20">
-            {children}
-          </main>
-          
-          {/* Detail assessment overlay */}
-          <ProjectDetailModal />
-          
-          {/* Footer */}
-          <Footer />
-        </QueryProvider>
-      </body>
-    </html>
+      <html
+        lang="en"
+        className={`${libreCaslon.variable} ${dmSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      >
+        <body className="min-h-full flex flex-col bg-navy-deep text-slate-100 font-sans selection:bg-cyan-500/20 selection:text-electric-blue">
+          <QueryProvider>
+            {/* Sticky Global Navigation */}
+            <Navbar />
+            
+            {/* Main Content Area */}
+            <main className="flex-grow pt-20">
+              {children}
+            </main>
+            
+            {/* Detail assessment overlay */}
+            <ProjectDetailModal />
+            
+            {/* Footer */}
+            <Footer />
+          </QueryProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
