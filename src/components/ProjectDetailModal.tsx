@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { useStore } from "@/store/useStore";
 import { useShallow } from "zustand/react/shallow";
-import { X, Calendar, MapPin, Users, Clock, ShieldCheck, Heart, CircleDollarSign } from "lucide-react";
+import { X, Calendar, MapPin, Users, Clock, ShieldCheck, Heart, CircleDollarSign, Download } from "lucide-react";
 import GlassPanel from "./GlassPanel";
 
 export default function ProjectDetailModal() {
@@ -55,14 +55,51 @@ export default function ProjectDetailModal() {
         className="relative w-full max-w-4xl max-h-[85vh] overflow-y-auto z-10 p-0 border border-electric-blue/25 shadow-2xl flex flex-col"
         glowColor="cyan"
       >
-        {/* Close Button */}
-        <button
-          onClick={() => setSelectedProjectId(null)}
-          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-navy-dark/80 hover:bg-navy-light border border-slate-700/60 text-slate-300 hover:text-white transition-all focus:outline-none"
-          aria-label="Close modal"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {/* Action Buttons (Download & Close) */}
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+          <button
+            onClick={() => {
+              const reportText = `PROJECT REPORT: ${project.title}\n`
+                + `====================================================\n\n`
+                + `Organized By: ${project.clubName}\n`
+                + `Avenue of Service: ${project.avenueOfService}\n`
+                + `Area of Focus: ${project.areaOfFocus}\n`
+                + `Location: ${project.location}\n`
+                + `Zone Assignment: ${project.zone}\n`
+                + `Upload Date: ${formatDate(project.uploadDate)}\n\n`
+                + `METRICS:\n`
+                + `----------------------------------------------------\n`
+                + `Impact Score: ${project.impactScore}/100\n`
+                + `Beneficiaries: ${project.beneficiaries.toLocaleString()}\n`
+                + `Volunteer Hours: ${project.volunteerHours}\n`
+                + `Volunteers Participated: ${project.volunteerCount}\n`
+                + `Contributions/Funding: INR ${project.contributions.toLocaleString()}\n\n`
+                + `PROJECT OVERVIEW:\n`
+                + `----------------------------------------------------\n`
+                + `${project.description}\n`;
+
+              const blob = new Blob([reportText], { type: "text/plain;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.setAttribute("href", url);
+              link.setAttribute("download", `Project_Report_${project.id}.txt`);
+              link.click();
+            }}
+            className="px-3 py-1.5 flex items-center gap-2 rounded-full bg-navy-dark/80 hover:bg-navy-light border border-slate-700/60 text-slate-300 hover:text-white transition-all text-xs font-bold focus:outline-none"
+            aria-label="Download report"
+          >
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">Download Report</span>
+          </button>
+          
+          <button
+            onClick={() => setSelectedProjectId(null)}
+            className="p-1.5 rounded-full bg-navy-dark/80 hover:bg-navy-light border border-slate-700/60 text-slate-300 hover:text-white transition-all focus:outline-none"
+            aria-label="Close modal"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
         {/* Banner/Image */}
         <div className="relative w-full h-64 md:h-80 bg-navy-medium flex-shrink-0">

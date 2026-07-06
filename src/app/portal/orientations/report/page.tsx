@@ -30,6 +30,11 @@ export default function ReportOrientationPage() {
       setErrorMsg("Please choose a valid date.");
       return;
     }
+    
+    if (!club?.id) {
+      setErrorMsg("You must be assigned to a Club to report an orientation. Please update your profile or contact district support.");
+      return;
+    }
 
     try {
       setErrorMsg("");
@@ -38,7 +43,7 @@ export default function ReportOrientationPage() {
       const richRemarks = `Orientation: ${name || "Untitled"} | Type: ${orientationType} | Venue: ${venue || "N/A"} | Time: ${startTime || "00:00"} to ${endTime || "00:00"}. Remarks: ${remarks || "None"}`;
 
       await createOrientation({
-        club_id: club?.id || "d157a16b-1234-4b45-9a8b-319200000000", // Fallback default club ID if profile is empty
+        club_id: club.id,
         date: date,
         speaker_name: speakerName || "Guest Facilitator",
         new_members_inducted: parseInt(participantsCount) || 0,

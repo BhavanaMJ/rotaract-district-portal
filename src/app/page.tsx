@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import WaveBackground from "@/components/WaveBackground";
 import GlassPanel from "@/components/GlassPanel";
@@ -8,6 +8,7 @@ import StatisticCard from "@/components/StatisticCard";
 import ProjectCard from "@/components/ProjectCard";
 import { useStore, selectFilteredProjects } from "@/store/useStore";
 import { useShallow } from "zustand/react/shallow";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import {
   ArrowRight,
   Sparkles,
@@ -31,6 +32,57 @@ export default function HomePage() {
 
   // Take top 4 sorted projects for the featured section
   const featuredProjects = projects.slice(0, 4);
+
+  // --- Framer Motion Parallax Setup ---
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Smooth springs for a fluid, natural feel
+  const springConfig = { stiffness: 75, damping: 20 };
+  const springX = useSpring(mouseX, springConfig);
+  const springY = useSpring(mouseY, springConfig);
+
+  // Different translation layers for the parallax 3D effect
+  const xGlow = useTransform(springX, [-1000, 1000], [-50, 50]);
+  const yGlow = useTransform(springY, [-1000, 1000], [-50, 50]);
+
+  const xTitle = useTransform(springX, [-1000, 1000], [-25, 25]);
+  const yTitle = useTransform(springY, [-1000, 1000], [-25, 25]);
+
+  const xStats = useTransform(springX, [-1000, 1000], [15, -15]);
+  const yStats = useTransform(springY, [-1000, 1000], [15, -15]);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    // Only track if we are mounted to avoid SSR mismatch
+    if (!isMounted) return;
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    mouseX.set(e.clientX - centerX);
+    mouseY.set(e.clientY - centerY);
+  };
+  // ------------------------------------
+
+  // Container variants for staggering children
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 80, damping: 20 } }
+  };
 
   const avenues = [
     {
@@ -83,55 +135,81 @@ export default function HomePage() {
       <WaveBackground intensity={0.65} particleCount={45} />
 
       {/* ================= SECTION 1 – HERO ================= */}
-      <section className="relative min-h-[90vh] flex flex-col justify-center items-center px-6 md:px-8 py-20 text-center overflow-hidden">
-        {/* Soft atmospheric gradient top glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 ocean-glow-top -z-10" />
+      <section 
+        className="relative min-h-[90vh] flex flex-col justify-center items-center px-6 md:px-8 py-20 text-center overflow-hidden perspective-[1000px]"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => { mouseX.set(0); mouseY.set(0); }}
+      >
+        {/* Soft atmospheric gradient top glow (Parallax Layer 1) */}
+        <motion.div 
+          style={{ x: xGlow, y: yGlow }}
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 ocean-glow-top -z-10 opacity-70" 
+        />
 
-        <div className="max-w-4xl mx-auto flex flex-col items-center gap-6 z-10">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          style={{ x: xTitle, y: yTitle }}
+          className="max-w-4xl mx-auto flex flex-col items-center gap-6 z-10 will-change-transform"
+        >
           {/* Accent Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase bg-electric-blue/10 border border-electric-blue/30 text-electric-blue backdrop-blur-md animate-pulse">
-            <Sparkles className="w-3.5 h-3.5" />
+          <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase bg-electric-blue/10 border border-electric-blue/30 text-electric-blue backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             <span>District 3192 Flagship Portal</span>
-          </div>
+          </motion.div>
 
-          {/* High-Impact caslon display title */}
-          <h1 className="font-headline text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white leading-[1.15]">
-            ROTARACT DISTRICT 3192
-          </h1>
+          {/* High-Impact caslon display title with text-glow */}
+          <motion.h1 variants={itemVariants} className="font-headline text-5xl sm:text-7xl md:text-8xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 leading-[1.1] filter drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+            ROTARACT<br/>DISTRICT 3192
+          </motion.h1>
 
           {/* Subtitle */}
-          <p className="font-body text-base md:text-xl text-slate-300 max-w-2xl leading-relaxed">
+          <motion.p variants={itemVariants} className="font-body text-base md:text-xl text-slate-300 max-w-2xl leading-relaxed mt-2">
             Discover the projects, people, and ripples of impact creating positive,
             sustainable change across communities.
-          </p>
+          </motion.p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mt-6">
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-5 mt-8">
             <Link
               href="/projects"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-electric-blue to-ocean-glow text-navy-deep font-bold text-sm uppercase tracking-wider shadow-lg shadow-electric-blue/20 hover:scale-105 transition-transform duration-300"
+              className="group relative inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-electric-blue text-navy-deep font-black text-sm uppercase tracking-wider overflow-hidden hover:scale-105 transition-transform duration-300 shadow-[0_0_25px_rgba(0,240,255,0.4)]"
             >
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
               Explore Projects
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             
             <Link
               href="/leaderboard"
-              className="inline-flex items-center justify-center px-8 py-4 rounded-full border border-slate-700/60 bg-navy-dark/40 text-slate-200 font-semibold text-sm uppercase tracking-wider hover:bg-navy-light hover:border-slate-500/80 transition-all duration-300"
+              className="inline-flex items-center justify-center px-8 py-4 rounded-full border border-slate-700/60 bg-navy-dark/40 text-slate-200 font-semibold text-sm uppercase tracking-wider hover:bg-slate-800 hover:text-white hover:border-slate-500 transition-all duration-300 backdrop-blur-sm"
             >
               View Rankings
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        {/* ================= HERO LIVE IMPACT METRICS ================= */}
-        <div className="w-full max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-20 px-4 z-10">
-          <StatisticCard icon={Layers} value={stats.totalProjects} label="Projects Finished" suffix="+" />
-          <StatisticCard icon={Users} value={stats.activeClubs} label="Active Clubs" />
-          <StatisticCard icon={Award} value={stats.totalBeneficiaries} label="People Reached" suffix="+" />
-          <StatisticCard icon={Clock} value={stats.volunteerHours} label="Vol. Hours" suffix=" hrs" />
-          <StatisticCard icon={Coins} value={stats.contributions} label="Contributions" prefix="₹" suffix="+" />
-        </div>
+        {/* ================= HERO LIVE IMPACT METRICS (Parallax Layer 3 - Reverse) ================= */}
+        <motion.div 
+          style={{ x: xStats, y: yStats }}
+          className="w-full max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-24 px-4 z-10 will-change-transform"
+        >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}><StatisticCard icon={Layers} value={stats.totalProjects} label="Projects Finished" suffix="+" /></motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.5 }}><StatisticCard icon={Users} value={stats.activeClubs} label="Active Clubs" /></motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.5 }}><StatisticCard icon={Award} value={stats.totalBeneficiaries} label="People Reached" suffix="+" /></motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9, duration: 0.5 }}><StatisticCard icon={Clock} value={stats.volunteerHours} label="Vol. Hours" suffix=" hrs" /></motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0, duration: 0.5 }}><StatisticCard icon={Coins} value={stats.contributions} label="Contributions" prefix="₹" suffix="+" /></motion.div>
+        </motion.div>
+        
+        {/* Subtle Scroll Indicator */}
+        <motion.div 
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, duration: 1 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        >
+          <span className="text-[10px] text-slate-500 font-metadata uppercase tracking-widest font-bold">Scroll Down</span>
+          <div className="w-px h-12 bg-gradient-to-b from-electric-blue to-transparent animate-pulse" />
+        </motion.div>
       </section>
 
       {/* ================= SECTION 2 – FEATURED STORIES ================= */}
@@ -159,7 +237,7 @@ export default function HomePage() {
           {/* Draggable/Overflow Carousel Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredProjects.map((project) => (
-              <div key={project.id} className="h-full">
+              <div key={project.id} className="h-full hover:-translate-y-2 transition-transform duration-300">
                 <ProjectCard project={project} />
               </div>
             ))}
@@ -187,23 +265,23 @@ export default function HomePage() {
 
           {/* Grid counters */}
           <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="p-6 rounded-2xl bg-navy-deep/60 border border-slate-800/60">
-              <span className="font-metadata text-xs text-slate-500 uppercase font-bold">Total Operations</span>
+            <div className="p-6 rounded-2xl bg-navy-deep/60 border border-slate-800/60 hover:border-electric-blue/30 transition-colors group">
+              <span className="font-metadata text-xs text-slate-500 uppercase font-bold group-hover:text-electric-blue transition-colors">Total Operations</span>
               <h3 className="font-headline text-4xl font-black text-white mt-2">450+</h3>
               <p className="text-xs text-slate-400 font-body mt-2">Certified projects executed across urban & rural areas.</p>
             </div>
-            <div className="p-6 rounded-2xl bg-navy-deep/60 border border-slate-800/60">
-              <span className="font-metadata text-xs text-slate-500 uppercase font-bold">Volunteer Current</span>
+            <div className="p-6 rounded-2xl bg-navy-deep/60 border border-slate-800/60 hover:border-electric-blue/30 transition-colors group">
+              <span className="font-metadata text-xs text-slate-500 uppercase font-bold group-hover:text-electric-blue transition-colors">Volunteer Current</span>
               <h3 className="font-headline text-4xl font-black text-electric-blue mt-2">2,500+</h3>
               <p className="text-xs text-slate-400 font-body mt-2">Active youth leaders committed to social transformation.</p>
             </div>
-            <div className="p-6 rounded-2xl bg-navy-deep/60 border border-slate-800/60">
-              <span className="font-metadata text-xs text-slate-500 uppercase font-bold">Direct Beneficiaries</span>
+            <div className="p-6 rounded-2xl bg-navy-deep/60 border border-slate-800/60 hover:border-ocean-glow/30 transition-colors group">
+              <span className="font-metadata text-xs text-slate-500 uppercase font-bold group-hover:text-ocean-glow transition-colors">Direct Beneficiaries</span>
               <h3 className="font-headline text-4xl font-black text-ocean-glow mt-2">120K+</h3>
               <p className="text-xs text-slate-400 font-body mt-2">Families and individuals uplifted via structural programs.</p>
             </div>
-            <div className="p-6 rounded-2xl bg-navy-deep/60 border border-slate-800/60">
-              <span className="font-metadata text-xs text-slate-500 uppercase font-bold">District Capital</span>
+            <div className="p-6 rounded-2xl bg-navy-deep/60 border border-slate-800/60 hover:border-emerald-400/30 transition-colors group">
+              <span className="font-metadata text-xs text-slate-500 uppercase font-bold group-hover:text-emerald-400 transition-colors">District Capital</span>
               <h3 className="font-headline text-4xl font-black text-emerald-400 mt-2">₹5.2M+</h3>
               <p className="text-xs text-slate-400 font-body mt-2">Funds raised and transparently mobilized for social relief.</p>
             </div>
@@ -283,8 +361,8 @@ export default function HomePage() {
 
           {/* Values Block */}
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-8 font-body">
-            <div className="flex flex-col gap-3">
-              <h3 className="font-headline text-xl font-bold text-white border-b border-slate-800/40 pb-2">
+            <div className="flex flex-col gap-3 group">
+              <h3 className="font-headline text-xl font-bold text-white border-b border-slate-800/40 pb-2 group-hover:text-electric-blue transition-colors">
                 Our Mission
               </h3>
               <p className="text-slate-400 text-sm leading-relaxed">
@@ -294,8 +372,8 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <h3 className="font-headline text-xl font-bold text-white border-b border-slate-800/40 pb-2">
+            <div className="flex flex-col gap-3 group">
+              <h3 className="font-headline text-xl font-bold text-white border-b border-slate-800/40 pb-2 group-hover:text-electric-blue transition-colors">
                 Our Vision
               </h3>
               <p className="text-slate-400 text-sm leading-relaxed">
@@ -305,7 +383,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-3 sm:col-span-2">
+            <div className="flex flex-col gap-3 sm:col-span-2 mt-4">
               <h3 className="font-headline text-xl font-bold text-white border-b border-slate-800/40 pb-2">
                 Core District Values
               </h3>
@@ -320,9 +398,9 @@ export default function HomePage() {
                 ].map((val, idx) => (
                   <div
                     key={idx}
-                    className="px-4 py-2.5 rounded-lg bg-navy-deep/60 border border-slate-800/60 text-xs font-metadata text-slate-300 flex items-center gap-2"
+                    className="px-4 py-2.5 rounded-lg bg-navy-deep/60 border border-slate-800/60 hover:border-electric-blue/40 text-xs font-metadata text-slate-300 flex items-center gap-2 transition-colors cursor-default hover:bg-electric-blue/5"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-electric-blue" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-electric-blue shadow-[0_0_8px_rgba(0,240,255,0.8)]" />
                     <span>{val}</span>
                   </div>
                 ))}
@@ -340,7 +418,7 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto z-10 text-center">
           <GlassPanel
             glowColor="cyan"
-            className="flex flex-col items-center gap-6 py-16 px-8 md:px-12 bg-navy-dark/50 border border-electric-blue/20"
+            className="flex flex-col items-center gap-6 py-16 px-8 md:px-12 bg-navy-dark/50 border border-electric-blue/20 hover:border-electric-blue/40 transition-colors"
           >
             <h2 className="font-headline text-3xl md:text-5xl font-bold text-white leading-tight">
               Ready to Explore the Ocean of Impact?
@@ -353,13 +431,14 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 mt-6 w-full sm:w-auto">
               <Link
                 href="/projects"
-                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-electric-blue text-navy-deep font-bold text-xs uppercase tracking-wider hover:bg-ocean-glow hover:scale-105 transition-all duration-300"
+                className="group relative inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-electric-blue text-navy-deep font-bold text-xs uppercase tracking-wider overflow-hidden hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(0,240,255,0.3)]"
               >
+                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
                 Explore Projects
               </Link>
               <Link
                 href="/clubs"
-                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-transparent border border-slate-700/60 text-slate-200 font-semibold text-xs uppercase tracking-wider hover:bg-navy-light transition-all duration-300"
+                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-transparent border border-slate-700/60 text-slate-200 font-semibold text-xs uppercase tracking-wider hover:bg-slate-800 hover:border-slate-500 transition-all duration-300"
               >
                 Explore Clubs
               </Link>

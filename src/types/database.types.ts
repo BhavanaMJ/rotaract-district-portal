@@ -334,6 +334,33 @@ export interface Database {
         }
         Relationships: []
       }
+      district_settings: {
+        Row: {
+          id: string
+          general: Json
+          branding: Json
+          security: Json
+          notifications: Json
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          general?: Json
+          branding?: Json
+          security?: Json
+          notifications?: Json
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          general?: Json
+          branding?: Json
+          security?: Json
+          notifications?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dovs: {
         Row: {
           id: string

@@ -113,6 +113,8 @@ export default async function SyncPage() {
           
           targetPath = '/admin/dashboard';
         } else {
+          const errText = await profileRes.text();
+          console.error('[SyncPage] Auto-provisioning failed:', profileRes.status, errText);
           targetPath = '/login?error=unauthorized';
         }
       }

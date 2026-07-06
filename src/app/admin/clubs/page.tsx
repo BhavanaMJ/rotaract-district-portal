@@ -24,6 +24,7 @@ export default function AdminClubsPage() {
   const projects = useStore((state) => state.projects);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClubId, setSelectedClubId] = useState<string | null>(null);
+  const setSelectedProjectId = useStore((state) => state.setSelectedProjectId);
 
   const sortedClubs = [...clubs].sort((a, b) => {
     if (b.totalPoints !== a.totalPoints) {
@@ -170,13 +171,17 @@ export default function AdminClubsPage() {
                 {clubProjects.length > 0 ? (
                   <div className="flex flex-col gap-3 overflow-y-auto max-h-[500px] custom-scrollbar pr-1">
                     {clubProjects.map((project) => (
-                      <div key={project.id} className="p-4 rounded-xl bg-navy-deep/40 border border-slate-800 flex items-center justify-between gap-4">
+                      <div 
+                        key={project.id} 
+                        className="p-4 rounded-xl bg-navy-deep/40 border border-slate-800 flex items-center justify-between gap-4 cursor-pointer hover:bg-slate-800/60 transition-colors group"
+                        onClick={() => setSelectedProjectId(project.id)}
+                      >
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-12 h-12 rounded bg-navy-deep border border-slate-700 overflow-hidden shrink-0">
+                          <div className="w-12 h-12 rounded bg-navy-deep border border-slate-700 overflow-hidden shrink-0 group-hover:border-electric-blue/50 transition-colors">
                             <img src={project.coverImage} alt="" className="w-full h-full object-cover" />
                           </div>
                           <div className="flex flex-col min-w-0">
-                            <span className="text-xs font-bold text-white leading-snug truncate">{project.title}</span>
+                            <span className="text-xs font-bold text-white leading-snug truncate group-hover:text-electric-blue transition-colors">{project.title}</span>
                             <span className="text-[9px] text-slate-500 font-metadata uppercase tracking-wider mt-0.5">
                               {project.avenueOfService}
                             </span>

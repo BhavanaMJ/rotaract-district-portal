@@ -3,7 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useClerk } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   Layers,
@@ -14,13 +13,13 @@ import {
   LogOut,
   ArrowLeft,
   BookOpen,
-  Tent
+  Tent,
+  FileText
 } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut } = useClerk();
 
   const navItems = [
     { name: "Dashboard", href: "/portal/dashboard", icon: LayoutDashboard },
@@ -29,6 +28,7 @@ export default function Sidebar() {
     { name: "Installations", href: "/portal/installations", icon: Tent },
     { name: "Meetings", href: "/portal/meetings", icon: Users },
     { name: "DOV", href: "/portal/dov", icon: Award },
+    { name: "Bulletin", href: "/portal/bulletin", icon: FileText },
   ];
 
   const bottomItems = [
