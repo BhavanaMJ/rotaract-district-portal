@@ -46,15 +46,15 @@ export async function updateDistrictSettings(section: 'general' | 'branding' | '
     
   if (!current?.id) return false;
 
-  const updateObj: any = {
-    updated_at: new Date().toISOString()
+  const updateData: any = {
+    [section]: payload,
+    updated_at: new Date().toISOString(),
   };
-  updateObj[section] = payload;
-
+	
   const { error } = await supabase
-    .from('district_settings')
-    .update(updateObj)
-    .eq('id', current.id);
+    .from("district_settings")
+    .update(updateData)
+    .eq("id", current.id);
 
   if (error) {
     console.error(`Error updating district_settings [${section}]:`, error);
