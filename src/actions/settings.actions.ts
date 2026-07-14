@@ -46,12 +46,14 @@ export async function updateDistrictSettings(section: 'general' | 'branding' | '
     
   if (!current?.id) return false;
 
+  const updateObj: any = {
+    updated_at: new Date().toISOString()
+  };
+  updateObj[section] = payload;
+
   const { error } = await supabase
     .from('district_settings')
-    .update({ 
-      [section]: payload,
-      updated_at: new Date().toISOString()
-    })
+    .update(updateObj)
     .eq('id', current.id);
 
   if (error) {
