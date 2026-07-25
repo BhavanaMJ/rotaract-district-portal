@@ -9,7 +9,7 @@ import { useProfile } from "@/hooks/useProfile";
 
 export default function ReportOrientationPage() {
   const router = useRouter();
-  const { club } = useProfile();
+  const { club, profile } = useProfile();
   const { mutateAsync: createOrientation, isPending } = useCreateOrientation();
 
   // Form State
@@ -31,16 +31,20 @@ export default function ReportOrientationPage() {
       return;
     }
     
-    if (!club?.id) {
-      setErrorMsg("You must be assigned to a Club to report an orientation. Please update your profile or contact district support.");
-      return;
-    }
+    // Allow backend to fallback if club is missing
 
     try {
       setErrorMsg("");
       
       // Concatenate non-database fields into remarks for storage
       const richRemarks = `Orientation: ${name || "Untitled"} | Type: ${orientationType} | Venue: ${venue || "N/A"} | Time: ${startTime || "00:00"} to ${endTime || "00:00"}. Remarks: ${remarks || "None"}`;
+
+	if (!club?.id || !profile?.id) {
+  setErrorMsg(
+    "Unable to load your profile. Please refresh and try again."
+  );
+  return;
+}
 
       await createOrientation({
         club_id: club.id,

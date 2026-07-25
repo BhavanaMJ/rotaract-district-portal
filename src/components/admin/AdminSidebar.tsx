@@ -19,7 +19,8 @@ import {
   BrainCircuit,
   LogOut,
   Waves,
-  UserCircle
+  UserCircle,
+  Briefcase
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +32,7 @@ const NAV_ITEMS = [
   { name: "Access Requests", href: "/admin/access-requests", icon: ShieldCheck },
   { name: "Activities Review", href: "/admin/activities", icon: ClipboardList },
   { name: "Project Moderation", href: "/admin/projects", icon: Layers },
+  { name: "Operations Review", href: "/admin/operations", icon: Briefcase },
   { name: "Publications", href: "/admin/publications", icon: FileText },
   { name: "Leaderboard Engine", href: "/admin/leaderboard-engine", icon: Trophy },
   { name: "District Calendar", href: "/admin/calendar", icon: CalendarDays },
@@ -44,9 +46,13 @@ const NAV_ITEMS = [
 interface AdminSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  user: {
+    name: string;
+    email: string;
+  };
 }
 
-export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
+export default function AdminSidebar({ isOpen, onClose, user }: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -117,8 +123,8 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             <UserCircle className="w-5 h-5 text-slate-400" />
           </div>
           <div className="flex flex-col min-w-0">
-            <p className="text-xs font-bold text-white truncate">Super Admin</p>
-            <p className="text-[10px] text-slate-500 font-metadata truncate">admin@rotaract3192.org</p>
+            <p className="text-xs font-bold text-white truncate">{user.name}</p>
+            <p className="text-[10px] text-slate-500 font-metadata truncate">{user.email}</p>
           </div>
         </Link>
         

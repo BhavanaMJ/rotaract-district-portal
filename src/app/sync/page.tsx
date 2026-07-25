@@ -81,22 +81,8 @@ export default async function SyncPage() {
           targetPath = '/portal/dashboard';
         }
         console.log('[SyncPage] final targetPath:', targetPath);
-      } else {
-        // Auto-provision Super Admin for the first login (Demo Bootstrapping)
-        console.log('[SyncPage] Auto-provisioning Super Admin for:', email);
-        const nameParts = user.fullName ? user.fullName.split(' ') : ['Super', 'Admin'];
-        
-        const profileRes = await fetch(`${supabaseUrl}/rest/v1/member_profiles`, {
-          method: 'POST',
-          headers: { ...headers, 'Prefer': 'return=representation' },
-          body: JSON.stringify({
-            first_name: nameParts[0] || 'Super',
-            last_name: nameParts.slice(1).join(' ') || 'Admin',
-            email: email,
-            auth_id: userId,
-            phone: '0000000000'
-          })
-        });
+      }  else {
+        console.log('[SyncPage] User not found in member_profiles:', email);
 
         if (profileRes.ok) {
           const newProfiles = await profileRes.json();

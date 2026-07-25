@@ -7,6 +7,39 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export interface Database {
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          id: string
+          title: string
+          content: string
+          sender: string
+          target_audience: string
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          content: string
+          sender: string
+          target_audience: string
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          content?: string
+          sender?: string
+          target_audience?: string
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: []
+      }
       access_requests: {
         Row: {
           id: string
@@ -334,6 +367,33 @@ export interface Database {
         }
         Relationships: []
       }
+      district_settings: {
+        Row: {
+          id: string
+          general: Json
+          branding: Json
+          security: Json
+          notifications: Json
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          general?: Json
+          branding?: Json
+          security?: Json
+          notifications?: Json
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          general?: Json
+          branding?: Json
+          security?: Json
+          notifications?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dovs: {
         Row: {
           id: string
@@ -448,7 +508,7 @@ export interface Database {
       member_profiles: {
         Row: {
           id: string
-          auth_id: string
+          auth_id?: string | null
           club_id: string | null
           first_name: string
           last_name: string
@@ -462,7 +522,7 @@ export interface Database {
         }
         Insert: {
           id?: string
-          auth_id: string
+          auth_id?: string | null
           club_id?: string | null
           first_name: string
           last_name: string
@@ -476,7 +536,7 @@ export interface Database {
         }
         Update: {
           id?: string
-          auth_id?: string
+          auth_id?: string | null
           club_id?: string | null
           first_name?: string
           last_name?: string
