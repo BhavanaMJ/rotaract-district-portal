@@ -64,10 +64,8 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           onClick={onClose}
           className="flex items-center gap-2 group"
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-electric-blue to-ocean-dark flex items-center justify-center p-0.5">
-            <div className="w-full h-full bg-navy-deep rounded-md flex items-center justify-center transition-transform group-hover:scale-95">
-              <Waves className="w-4 h-4 text-electric-blue" />
-            </div>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+            <img src="/logo.svg" alt="Unleash Exuberance Logo" className="w-full h-full object-contain" />
           </div>
           <div className="flex flex-col">
             <span className="font-headline text-sm font-bold text-white tracking-wider leading-none">

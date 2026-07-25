@@ -103,10 +103,15 @@ export default function ReportActivityPage() {
   };
 
   const onSubmit = async (data: ReportFormValues) => {
+    if (!club?.id) {
+      setErrorMsg("You must be assigned to a Club to report an activity. Please update your profile or contact district support.");
+      return;
+    }
+
     try {
       setErrorMsg("");
       const payload: any = {
-        club_id: club?.id || "d157a16b-1234-4b45-9a8b-319200000000",
+        club_id: club.id,
         title: data.title,
         description: data.description,
         status: "DRAFT",

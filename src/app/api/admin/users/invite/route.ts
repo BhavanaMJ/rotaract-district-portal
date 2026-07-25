@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateSupabaseJWT } from '@/lib/jwt';
-import { clerkClient } from '@clerk/nextjs/server';
+import { clerkClient, auth } from '@clerk/nextjs/server';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const apiKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -31,6 +31,16 @@ async function supabaseFetch(path: string, options: RequestInit = {}) {
 
 export async function POST(req: NextRequest) {
   try {
+    const { userId } = await auth();
+    let actorId = null;
+
+    if (userId) {
+      const adminProfiles = await supabaseFetch(`/member_profiles?auth_id=eq.${userId}&select=id`);
+      if (adminProfiles && adminProfiles.length > 0) {
+        actorId = adminProfiles[0].id;
+      }
+    }
+
     const { name, email, phone, clubId, role } = await req.json();
 
     if (!name || !email || !role) {
@@ -88,7 +98,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Log the admin action to audit logs
-    const actorId = '5057e100-0000-4000-8000-000000000001'; // Default system actor ID
+    // actorId is dynamically fetched above, or null if not found
     await supabaseFetch('/audit_logs', {
       method: 'POST',
       body: JSON.stringify({

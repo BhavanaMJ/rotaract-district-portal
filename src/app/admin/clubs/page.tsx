@@ -108,13 +108,7 @@ export default function AdminClubsPage() {
               </div>
               <Trophy className="w-8 h-8 text-amber-500 opacity-20" />
             </GlassPanel>
-            <GlassPanel className="p-5 border-slate-800/60 bg-navy-dark/40 flex items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] text-slate-500 font-metadata uppercase tracking-wider font-bold">Leaderboard Score</span>
-                <span className="text-2xl font-headline font-bold text-electric-blue">{club.totalPoints.toLocaleString()} pts</span>
-              </div>
-              <Award className="w-8 h-8 text-electric-blue opacity-20" />
-            </GlassPanel>
+
             <GlassPanel className="p-5 border-slate-800/60 bg-navy-dark/40 flex items-center justify-between">
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] text-slate-500 font-metadata uppercase tracking-wider font-bold">Registered Members</span>
@@ -178,15 +172,12 @@ export default function AdminClubsPage() {
                           <div className="flex flex-col min-w-0">
                             <span className="text-xs font-bold text-white leading-snug truncate">{project.title}</span>
                             <span className="text-[9px] text-slate-500 font-metadata uppercase tracking-wider mt-0.5">
-                              {project.avenueOfService}
+                              Projects: {club.totalProjects}
                             </span>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-3 shrink-0">
-                          <span className="inline-flex items-center justify-center px-2 py-1 rounded bg-ocean-glow/10 text-ocean-glow font-metadata font-bold text-[10px] border border-ocean-glow/20">
-                            Score: {project.impactScore}
-                          </span>
                         </div>
                       </div>
                     ))}
@@ -283,11 +274,7 @@ export default function AdminClubsPage() {
               );
             }
           },
-          {
-            header: "Score",
-            accessorKey: "totalPoints",
-            className: "font-metadata"
-          },
+
           {
             header: "Status",
             cell: () => (

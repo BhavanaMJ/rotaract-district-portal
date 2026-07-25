@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { activityService } from '@/services/activity.service';
+import { createActivityAction, updateActivityAction, deleteActivityAction } from '@/actions/activity.actions';
 import { activityKeys } from '@/queries/activity.queries';
 import type { Database } from '@/types/database.types';
 
@@ -8,7 +8,7 @@ export function useCreateActivity() {
 
   return useMutation({
     mutationFn: (payload: Database['public']['Tables']['activities']['Insert']) => 
-      activityService.create(payload),
+      createActivityAction(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: activityKeys.lists() });
     },
@@ -20,7 +20,7 @@ export function useUpdateActivity() {
 
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: Database['public']['Tables']['activities']['Update'] }) => 
-      activityService.update(id, payload),
+      updateActivityAction(id, payload),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: activityKeys.detail(data.id) });
       queryClient.invalidateQueries({ queryKey: activityKeys.lists() });
@@ -32,7 +32,7 @@ export function useDeleteActivity() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => activityService.delete(id),
+    mutationFn: (id: string) => deleteActivityAction(id),
     onSuccess: (_, deletedId) => {
       queryClient.invalidateQueries({ queryKey: activityKeys.detail(deletedId) });
       queryClient.invalidateQueries({ queryKey: activityKeys.lists() });

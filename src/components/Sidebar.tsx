@@ -3,7 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useClerk } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   Layers,
@@ -14,13 +13,13 @@ import {
   LogOut,
   ArrowLeft,
   BookOpen,
-  Tent
+  Tent,
+  FileText
 } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut } = useClerk();
 
   const navItems = [
     { name: "Dashboard", href: "/portal/dashboard", icon: LayoutDashboard },
@@ -29,6 +28,7 @@ export default function Sidebar() {
     { name: "Installations", href: "/portal/installations", icon: Tent },
     { name: "Meetings", href: "/portal/meetings", icon: Users },
     { name: "DOV", href: "/portal/dov", icon: Award },
+    { name: "Bulletin", href: "/portal/bulletin", icon: FileText },
   ];
 
   const bottomItems = [
@@ -41,8 +41,8 @@ export default function Sidebar() {
       {/* Brand Header */}
       <div className="h-20 flex items-center px-6 border-b border-slate-800/60">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-electric-blue/10 border border-electric-blue/30 flex items-center justify-center">
-            <Layers className="w-4 h-4 text-electric-blue" />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+            <img src="/logo.svg" alt="Unleash Exuberance Logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <h2 className="font-headline font-bold text-white tracking-wide text-sm">
