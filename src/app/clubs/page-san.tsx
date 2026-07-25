@@ -91,7 +91,7 @@ export default function ClubsPage() {
                     {top2.name}
                   </h3>
                   <p className="text-[10px] font-metadata text-slate-400 mt-1 uppercase font-bold tracking-wider">
-                    {top2.president || "N/A"}
+                    {top2.leaders?.[0]?.name || "N/A"}
                   </p>
                   <div className="mt-4 pt-3 border-t border-slate-800/40 text-center text-xs font-metadata">
                     <p className="text-[9px] text-slate-500 font-bold uppercase">Projects Completed</p>
@@ -120,7 +120,7 @@ export default function ClubsPage() {
                     {top1.name}
                   </h3>
                   <p className="text-[10px] font-metadata text-electric-blue mt-1 uppercase font-bold tracking-wider">
-                    {top1.president || "N/A"}
+                    {top1.leaders?.[0]?.name || "N/A"}
                   </p>
                   <div className="mt-5 pt-4 border-t border-slate-800/40 text-center text-xs font-metadata">
                     <p className="text-[9px] text-slate-500 font-bold uppercase">Projects Completed</p>
@@ -149,7 +149,7 @@ export default function ClubsPage() {
                     {top3.name}
                   </h3>
                   <p className="text-[10px] font-metadata text-slate-400 mt-1 uppercase font-bold tracking-wider">
-                    {top3.president || "N/A"}
+                    {top3.leaders?.[0]?.name || "N/A"}
                   </p>
                   <div className="mt-4 pt-3 border-t border-slate-800/40 text-center text-xs font-metadata">
                     <p className="text-[9px] text-slate-500 font-bold uppercase">Projects Completed</p>

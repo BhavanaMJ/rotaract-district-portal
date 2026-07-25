@@ -224,7 +224,7 @@ export default function AdminClubsPage() {
         <button 
           onClick={() => {
             const headers = ["ID", "Name", "President", "Charter Year", "Members", "Projects", "Points", "Zone", "Email"];
-            const rows = clubs.map(c => [c.id, `"${c.name}"`, `"${(c as any).president || 'N/A'}"`, c.charterYear, c.memberCount, c.totalProjects, c.totalPoints, c.zone, c.email]);
+            const rows = clubs.map(c => [c.id, `"${c.name}"`, `"${c.leaders?.[0]?.name || 'N/A'}"`, c.charterYear, c.memberCount, c.totalProjects, c.totalPoints, c.zone, c.email]);
             const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
             const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
             const url = URL.createObjectURL(blob);

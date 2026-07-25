@@ -135,7 +135,7 @@ export default function LeaderboardPage() {
                               {club.name}
                             </p>
                             <p className="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-wider">
-                              President: {club.president}
+                              President: {club.leaders?.[0]?.name || "N/A"}
                             </p>
                           </div>
                         </td>

@@ -37,7 +37,7 @@ export interface Club {
   id: string;
   name: string;
   logo: string;
-  president: string;
+  leaders: { designation: string; name: string }[];
   charterYear: string;
   memberCount: number;
   totalProjects: number;
@@ -496,7 +496,7 @@ export const selectFilteredClubs = (state: StoreState) => {
     result = result.filter(
       (c) =>
         c.name.toLowerCase().includes(term) ||
-        (c.president || "").toLowerCase().includes(term)
+        (c.leaders?.[0]?.name || "").toLowerCase().includes(term)
     );
   }
   

@@ -52,7 +52,7 @@ export default function ClubCard({ club, rank }: ClubCardProps) {
         <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-navy-dark/40 border border-slate-800/60 font-body text-xs text-slate-300">
           <User className="w-3.5 h-3.5 text-ocean-glow" />
           <span className="text-slate-500 mr-1">President:</span>
-          <span className="font-semibold text-white">{club.president}</span>
+          <span className="font-semibold text-white">{club.leaders?.[0]?.name || "N/A"}</span>
         </div>
 
         {/* Description Snippet */}
