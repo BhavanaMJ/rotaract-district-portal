@@ -43,7 +43,7 @@ export default function Sidebar() {
       {/* Brand Header */}
       <div className="h-20 flex items-center px-6 border-b border-slate-800/60">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 rounded-lg flex items-center justify-center">
             <img src="/logo.png" alt="Unleash Exuberance Logo" className="w-full h-full object-contain" />
           </div>
           <div>
