@@ -84,25 +84,7 @@ export default async function SyncPage() {
       }  else {
         console.log('[SyncPage] User not found in member_profiles:', email);
 
-        if (profileRes.ok) {
-          const newProfiles = await profileRes.json();
-          const memberId = newProfiles[0].id;
-          
-          await fetch(`${supabaseUrl}/rest/v1/member_roles`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-              member_id: memberId,
-              role: 'Super Admin'
-            })
-          });
-          
-          targetPath = '/admin/dashboard';
-        } else {
-          const errText = await profileRes.text();
-          console.error('[SyncPage] Auto-provisioning failed:', profileRes.status, errText);
-          targetPath = '/login?error=unauthorized';
-        }
+        targetPath = '/login';
       }
     } else {
       targetPath = '/login?error=unauthorized';

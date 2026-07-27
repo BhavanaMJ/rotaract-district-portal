@@ -71,7 +71,7 @@ export default function AdminSidebar({ isOpen, onClose, user }: AdminSidebarProp
           className="flex items-center gap-2 group"
         >
           <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-            <img src="/logo.svg" alt="Unleash Exuberance Logo" className="w-full h-full object-contain" />
+            <img src="/logo.png" alt="Unleash Exuberance Logo" className="w-full h-full object-contain" />
           </div>
           <div className="flex flex-col">
             <span className="font-headline text-sm font-bold text-white tracking-wider leading-none">

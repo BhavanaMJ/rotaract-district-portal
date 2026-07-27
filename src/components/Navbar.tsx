@@ -50,8 +50,8 @@ export default function Navbar() {
         {/* District Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-electric-blue to-ocean-dark p-0.5 shadow-lg shadow-electric-blue/10">
-            <div className="w-full h-full bg-navy-deep rounded-[10px] flex items-center justify-center transition-transform group-hover:scale-95 duration-300">
-              <Waves className="w-5 h-5 text-electric-blue group-hover:text-ocean-glow transition-colors duration-300" />
+            <div className="w-full h-full bg-navy-deep rounded-[10px] flex items-center justify-center p-1 transition-transform group-hover:scale-95 duration-300">
+              <img src="/logo.png" alt="Logo" className="w-7 h-7 object-contain" />
             </div>
             <div className="absolute inset-0 rounded-xl bg-electric-blue/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
           </div>
