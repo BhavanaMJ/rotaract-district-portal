@@ -6,6 +6,8 @@
  *   apiUrl('/api/clubs')  =>  '/api/clubs'
  */
 export function apiUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+  // Only use basePath if we are in production (e.g. GitHub Pages)
+  const isDev = process.env.NODE_ENV === 'development';
+  const base = isDev ? '' : (process.env.NEXT_PUBLIC_BASE_PATH ?? '');
   return `${base}${path}`;
 }
