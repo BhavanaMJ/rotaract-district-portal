@@ -309,7 +309,7 @@ const mockProjects: Project[] = [
 
 export const useStore = create<StoreState>((set, get) => ({
   projects: mockProjects,
-  clubs: mockClubs,
+  clubs: [...mockClubs].sort((a, b) => a.name.localeCompare(b.name)),
   users: [
     {
       id: "usr_1",
@@ -501,14 +501,8 @@ export const selectFilteredClubs = (state: StoreState) => {
     result = result.filter((c) => c.zone === zone);
   }
   
-  // Leaderboard ranking logic:
-  // Total Points (desc), then Total Projects (desc)
-  result.sort((a, b) => {
-    if (b.totalPoints !== a.totalPoints) {
-      return b.totalPoints - a.totalPoints;
-    }
-    return b.totalProjects - a.totalProjects;
-  });
+  // Clubs are already sorted alphabetically in the store initialization
+  // No additional sorting needed here unless specifically requested
   
   return result;
 };
