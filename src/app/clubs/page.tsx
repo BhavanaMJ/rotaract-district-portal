@@ -214,10 +214,8 @@ export default function ClubsPage() {
           {/* Directory Cards Grid */}
           {filteredClubs.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredClubs.map((club, idx) => {
-                // Find rank in full leaderboard sorted list
-                const fullRank = leaderboardSorted.findIndex((c) => c.id === club.id) + 1;
-                return <ClubCard key={club.id} club={club} rank={fullRank} />;
+              {filteredClubs.map((club) => {
+                return <ClubCard key={club.id} club={club} />;
               })}
             </div>
           ) : (
