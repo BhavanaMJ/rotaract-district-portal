@@ -27,11 +27,61 @@ import {
 } from "lucide-react";
 
 export default function HomePage() {
-  const projects = useStore(useShallow(selectFilteredProjects));
-  const stats = useStore((state) => state.stats);
+  const [stats, setStats] = useState({
+    totalProjects: 0,
+    totalVolunteers: 0,
+    totalBeneficiaries: 0,
+    volunteerHours: 0,
+    contributions: 0,
+    activeClubs: 85,
+  });
+  const [dbProjects, setDbProjects] = useState<any[]>([]);
 
-  // Take top 4 sorted projects for the featured section
-  const featuredProjects = projects.slice(0, 4);
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const statsRes = await fetch("/api/portal/dashboard/stats");
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          if (statsData.stats) {
+            setStats(statsData.stats);
+          }
+        }
+        
+        const projRes = await fetch("/api/activities?page=1&pageSize=4&status=PUBLISHED");
+        if (projRes.ok) {
+          const projData = await projRes.json();
+          if (projData && Array.isArray(projData.data)) {
+            setDbProjects(projData.data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load homepage data:", err);
+      }
+    }
+    loadData();
+  }, []);
+
+  const featuredProjects = dbProjects.map((act: any) => ({
+    id: act.id,
+    title: act.title,
+    clubId: act.club_id || '',
+    clubName: act.clubs?.name || 'Unknown Club',
+    description: act.description,
+    coverImage: act.cover_image || 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=800&q=80',
+    volunteers: act.volunteers || 0,
+    volunteerHours: act.volunteer_hours || 0,
+    beneficiaries: act.beneficiaries || 0,
+    date: act.start_time || new Date().toISOString(),
+    avenueOfService: act.avenues?.[0] || 'Community Service',
+    areaOfFocus: act.focus_areas?.[0] || 'Education & Literacy',
+    impactScore: 90,
+    uploadDate: act.created_at || new Date().toISOString(),
+    location: act.venue || 'N/A',
+    zone: act.clubs?.zone || '1',
+    contributions: (act.cash_contribution || 0) + (act.in_kind_contribution || 0),
+    volunteerCount: act.volunteers || 0
+  }));
 
   // --- Framer Motion Parallax Setup ---
   const [isMounted, setIsMounted] = useState(false);
@@ -267,22 +317,30 @@ export default function HomePage() {
           <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="p-6 rounded-2xl bg-navy-deep/60 border border-slate-800/60 hover:border-electric-blue/30 transition-colors group">
               <span className="font-metadata text-xs text-slate-500 uppercase font-bold group-hover:text-electric-blue transition-colors">Total Operations</span>
-              <h3 className="font-headline text-4xl font-black text-white mt-2">450+</h3>
+              <h3 className="font-headline text-4xl font-black text-white mt-2">
+                {stats.totalProjects}
+              </h3>
               <p className="text-xs text-slate-400 font-body mt-2">Certified projects executed across urban & rural areas.</p>
             </div>
             <div className="p-6 rounded-2xl bg-navy-deep/60 border border-slate-800/60 hover:border-electric-blue/30 transition-colors group">
               <span className="font-metadata text-xs text-slate-500 uppercase font-bold group-hover:text-electric-blue transition-colors">Volunteer Current</span>
-              <h3 className="font-headline text-4xl font-black text-electric-blue mt-2">2,500+</h3>
+              <h3 className="font-headline text-4xl font-black text-electric-blue mt-2">
+                {stats.totalVolunteers.toLocaleString()}
+              </h3>
               <p className="text-xs text-slate-400 font-body mt-2">Active youth leaders committed to social transformation.</p>
             </div>
             <div className="p-6 rounded-2xl bg-navy-deep/60 border border-slate-800/60 hover:border-ocean-glow/30 transition-colors group">
               <span className="font-metadata text-xs text-slate-500 uppercase font-bold group-hover:text-ocean-glow transition-colors">Direct Beneficiaries</span>
-              <h3 className="font-headline text-4xl font-black text-ocean-glow mt-2">120K+</h3>
+              <h3 className="font-headline text-4xl font-black text-ocean-glow mt-2">
+                {stats.totalBeneficiaries.toLocaleString()}
+              </h3>
               <p className="text-xs text-slate-400 font-body mt-2">Families and individuals uplifted via structural programs.</p>
             </div>
             <div className="p-6 rounded-2xl bg-navy-deep/60 border border-slate-800/60 hover:border-emerald-400/30 transition-colors group">
               <span className="font-metadata text-xs text-slate-500 uppercase font-bold group-hover:text-emerald-400 transition-colors">District Capital</span>
-              <h3 className="font-headline text-4xl font-black text-emerald-400 mt-2">₹5.2M+</h3>
+              <h3 className="font-headline text-4xl font-black text-emerald-400 mt-2">
+                ₹{stats.contributions.toLocaleString('en-IN')}
+              </h3>
               <p className="text-xs text-slate-400 font-body mt-2">Funds raised and transparently mobilized for social relief.</p>
             </div>
           </div>

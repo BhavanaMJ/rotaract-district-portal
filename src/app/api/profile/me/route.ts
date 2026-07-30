@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       const { data: existingProfile } = await supabase
         .from('member_profiles')
         .select('id')
-        .eq('email', email)
+        .ilike('email', email)
         .single();
 
       if (existingProfile) {

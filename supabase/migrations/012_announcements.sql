@@ -21,6 +21,7 @@ CREATE TRIGGER set_announcements_updated_at BEFORE UPDATE ON public.announcement
 ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
 
 -- SELECT Policy: Allow authenticated users to read announcements matching their role
+DROP POLICY IF EXISTS "Read announcements by audience" ON public.announcements;
 CREATE POLICY "Read announcements by audience" ON public.announcements
   FOR SELECT TO authenticated
   USING (
@@ -33,6 +34,7 @@ CREATE POLICY "Read announcements by audience" ON public.announcements
   );
 
 -- WRITE Policy: Only Admins can create/modify announcements
+DROP POLICY IF EXISTS "Admins manage announcements" ON public.announcements;
 CREATE POLICY "Admins manage announcements" ON public.announcements
   FOR ALL TO authenticated
   USING (public.auth_has_role('District Admin', 'Super Admin'))

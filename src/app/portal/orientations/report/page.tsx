@@ -3,14 +3,49 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Send, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Send, Loader2, Users } from "lucide-react";
 import { useCreateOrientation } from "@/mutations/orientation.mutations";
 import { useProfile } from "@/hooks/useProfile";
 
 export default function ReportOrientationPage() {
   const router = useRouter();
-  const { club, profile } = useProfile();
+  const { club, profile, isLoading } = useProfile();
   const { mutateAsync: createOrientation, isPending } = useCreateOrientation();
+
+  if (isLoading) {
+    return (
+      <div className="max-w-3xl mx-auto flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 text-electric-blue animate-spin" />
+      </div>
+    );
+  }
+
+  if (!club?.id) {
+    return (
+      <div className="max-w-3xl mx-auto pb-12 flex flex-col gap-6">
+        <div>
+          <Link href="/portal/dashboard" className="inline-flex items-center gap-2 text-xs font-metadata font-bold text-slate-500 hover:text-white uppercase mb-4 transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </Link>
+          <h1 className="font-headline text-3xl font-bold text-white tracking-tight">Club Assignment Required</h1>
+        </div>
+        <div className="bg-navy-dark/40 border border-slate-800/60 p-8 rounded-2xl flex flex-col items-center text-center gap-5 backdrop-blur-md">
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+            <Users className="w-8 h-8 text-amber-400" />
+          </div>
+          <div className="flex flex-col gap-2 max-w-md">
+            <h3 className="font-headline text-lg font-bold text-slate-200">You are not assigned to a club</h3>
+            <p className="text-xs text-slate-400 font-body leading-relaxed">
+              You must be assigned to a club to submit reports. Please contact your Club President or District Administrator to map your profile to a club.
+            </p>
+          </div>
+          <Link href="/portal/dashboard" className="px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-semibold text-xs transition-all uppercase tracking-wider">
+            Return to Mission Control
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   // Form State
   const [name, setName] = useState("");

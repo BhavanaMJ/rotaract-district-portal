@@ -357,12 +357,12 @@ export const useStore = create<StoreState>((set, get) => ({
   ],
   currentUser: null,
   stats: {
-    totalProjects: 450,
-    totalVolunteers: 2500,
-    totalBeneficiaries: 120000,
-    volunteerHours: 45000,
-    contributions: 5200000,
-    activeClubs: 42,
+    totalProjects: 0,
+    totalVolunteers: 0,
+    totalBeneficiaries: 0,
+    volunteerHours: 0,
+    contributions: 0,
+    activeClubs: 85,
   },
   
   projectFilters: {

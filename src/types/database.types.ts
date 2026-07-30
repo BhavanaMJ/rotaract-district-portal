@@ -7,39 +7,6 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export interface Database {
   public: {
     Tables: {
-      announcements: {
-        Row: {
-          id: string
-          title: string
-          content: string
-          sender: string
-          target_audience: string
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          title: string
-          content: string
-          sender: string
-          target_audience: string
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          title?: string
-          content?: string
-          sender?: string
-          target_audience?: string
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
       access_requests: {
         Row: {
           id: string
@@ -52,6 +19,7 @@ export interface Database {
           created_at: string
           updated_at: string
           deleted_at: string | null
+          zone: string | null
         }
         Insert: {
           id?: string
@@ -64,6 +32,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          zone?: string | null
         }
         Update: {
           id?: string
@@ -76,6 +45,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          zone?: string | null
         }
         Relationships: []
       }
@@ -94,6 +64,21 @@ export interface Database {
           created_at: string
           updated_at: string
           deleted_at: string | null
+          activity_category: string | null
+          is_external_ngo: boolean | null
+          organization_name: string | null
+          avenues: any | null
+          focus_areas: any | null
+          activity_expenses: number | null
+          cash_contribution: number | null
+          in_kind_contribution: number | null
+          participants: number | null
+          beneficiaries: number | null
+          volunteers: number | null
+          volunteer_hours: number | null
+          submit_for_publication: boolean | null
+          feature_activity: boolean | null
+          cover_image: string | null
         }
         Insert: {
           id?: string
@@ -109,6 +94,21 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          activity_category?: string | null
+          is_external_ngo?: boolean | null
+          organization_name?: string | null
+          avenues?: any | null
+          focus_areas?: any | null
+          activity_expenses?: number | null
+          cash_contribution?: number | null
+          in_kind_contribution?: number | null
+          participants?: number | null
+          beneficiaries?: number | null
+          volunteers?: number | null
+          volunteer_hours?: number | null
+          submit_for_publication?: boolean | null
+          feature_activity?: boolean | null
+          cover_image?: string | null
         }
         Update: {
           id?: string
@@ -124,6 +124,21 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          activity_category?: string | null
+          is_external_ngo?: boolean | null
+          organization_name?: string | null
+          avenues?: any | null
+          focus_areas?: any | null
+          activity_expenses?: number | null
+          cash_contribution?: number | null
+          in_kind_contribution?: number | null
+          participants?: number | null
+          beneficiaries?: number | null
+          volunteers?: number | null
+          volunteer_hours?: number | null
+          submit_for_publication?: boolean | null
+          feature_activity?: boolean | null
+          cover_image?: string | null
         }
         Relationships: []
       }
@@ -190,6 +205,39 @@ export interface Database {
         }
         Relationships: []
       }
+      announcements: {
+        Row: {
+          id: string
+          title: string
+          content: string
+          sender: string
+          target_audience: string
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          content: string
+          sender: string
+          target_audience: string
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          content?: string
+          sender?: string
+          target_audience?: string
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           id: string
@@ -226,6 +274,48 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+        }
+        Relationships: []
+      }
+      club_leaders_directory: {
+        Row: {
+          id: string
+          club_name: string
+          club_type: string | null
+          club_email: string | null
+          partner_club: string | null
+          name: string
+          designation: string
+          phone: string | null
+          email: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          club_name: string
+          club_type?: string | null
+          club_email?: string | null
+          partner_club?: string | null
+          name: string
+          designation: string
+          phone?: string | null
+          email?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          club_name?: string
+          club_type?: string | null
+          club_email?: string | null
+          partner_club?: string | null
+          name?: string
+          designation?: string
+          phone?: string | null
+          email?: string | null
+          created_at?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -275,6 +365,10 @@ export interface Database {
           created_at: string
           updated_at: string
           deleted_at: string | null
+          zone: string | null
+          club_type: string | null
+          club_email: string | null
+          partner_rotary_club: string | null
         }
         Insert: {
           id?: string
@@ -288,6 +382,10 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          zone?: string | null
+          club_type?: string | null
+          club_email?: string | null
+          partner_rotary_club?: string | null
         }
         Update: {
           id?: string
@@ -301,6 +399,10 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          zone?: string | null
+          club_type?: string | null
+          club_email?: string | null
+          partner_rotary_club?: string | null
         }
         Relationships: []
       }
@@ -337,6 +439,33 @@ export interface Database {
         }
         Relationships: []
       }
+      district_settings: {
+        Row: {
+          id: string
+          general: Json | null
+          branding: Json | null
+          security: Json | null
+          notifications: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          general?: Json | null
+          branding?: Json | null
+          security?: Json | null
+          notifications?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          general?: Json | null
+          branding?: Json | null
+          security?: Json | null
+          notifications?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       districts: {
         Row: {
           id: string
@@ -367,33 +496,6 @@ export interface Database {
         }
         Relationships: []
       }
-      district_settings: {
-        Row: {
-          id: string
-          general: Json
-          branding: Json
-          security: Json
-          notifications: Json
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          general?: Json
-          branding?: Json
-          security?: Json
-          notifications?: Json
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          general?: Json
-          branding?: Json
-          security?: Json
-          notifications?: Json
-          updated_at?: string
-        }
-        Relationships: []
-      }
       dovs: {
         Row: {
           id: string
@@ -405,6 +507,7 @@ export interface Database {
           created_at: string
           updated_at: string
           deleted_at: string | null
+          title: string | null
         }
         Insert: {
           id?: string
@@ -416,6 +519,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          title?: string | null
         }
         Update: {
           id?: string
@@ -427,6 +531,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          title?: string | null
         }
         Relationships: []
       }
@@ -441,6 +546,9 @@ export interface Database {
           created_at: string
           updated_at: string
           deleted_at: string | null
+          name: string | null
+          start_time: string | null
+          end_time: string | null
         }
         Insert: {
           id?: string
@@ -452,6 +560,9 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          name?: string | null
+          start_time?: string | null
+          end_time?: string | null
         }
         Update: {
           id?: string
@@ -463,6 +574,9 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          name?: string | null
+          start_time?: string | null
+          end_time?: string | null
         }
         Relationships: []
       }
@@ -478,6 +592,11 @@ export interface Database {
           created_at: string
           updated_at: string
           deleted_at: string | null
+          title: string | null
+          venue: string | null
+          start_time: string | null
+          end_time: string | null
+          meeting_type: string | null
         }
         Insert: {
           id?: string
@@ -490,6 +609,11 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          title?: string | null
+          venue?: string | null
+          start_time?: string | null
+          end_time?: string | null
+          meeting_type?: string | null
         }
         Update: {
           id?: string
@@ -502,13 +626,18 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          title?: string | null
+          venue?: string | null
+          start_time?: string | null
+          end_time?: string | null
+          meeting_type?: string | null
         }
         Relationships: []
       }
       member_profiles: {
         Row: {
           id: string
-          auth_id?: string | null
+          auth_id: string | null
           club_id: string | null
           first_name: string
           last_name: string
@@ -624,6 +753,11 @@ export interface Database {
           created_at: string
           updated_at: string
           deleted_at: string | null
+          name: string | null
+          venue: string | null
+          start_time: string | null
+          end_time: string | null
+          orientation_type: string | null
         }
         Insert: {
           id?: string
@@ -635,6 +769,11 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          name?: string | null
+          venue?: string | null
+          start_time?: string | null
+          end_time?: string | null
+          orientation_type?: string | null
         }
         Update: {
           id?: string
@@ -646,6 +785,11 @@ export interface Database {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          name?: string | null
+          venue?: string | null
+          start_time?: string | null
+          end_time?: string | null
+          orientation_type?: string | null
         }
         Relationships: []
       }

@@ -7,7 +7,7 @@ export async function GET() {
 
   try {
     const bearerToken = await generateSupabaseJWT('service_role');
-    const res = await fetch(`${supabaseUrl}/rest/v1/clubs?select=id,name&deleted_at=is.null&order=name`, {
+    const res = await fetch(`${supabaseUrl}/rest/v1/clubs?select=id,name,logo_url,charter_date,member_count,total_projects,total_points,zone,description,email&deleted_at=is.null&order=name`, {
       headers: {
         'apikey': apiKey,
         'Authorization': `Bearer ${bearerToken}`,

@@ -35,7 +35,7 @@ export default async function SyncPage() {
 
   try {
     // 1. Find member profile by email
-    const resProfile = await fetch(`${supabaseUrl}/rest/v1/member_profiles?email=eq.${encodeURIComponent(email)}&select=id,auth_id`, {
+    const resProfile = await fetch(`${supabaseUrl}/rest/v1/member_profiles?email=ilike.${encodeURIComponent(email)}&select=id,auth_id`, {
       headers,
       cache: 'no-store'
     });
